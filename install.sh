@@ -60,6 +60,7 @@ declare -A DESC MARCA
 agregar() { IDS+=("$1"); DESC[$1]=$2; MARCA[$1]=$3; }
 
 $TIENE_PANTALLA_INICIO || agregar pantalla-inicio "Pantalla de inicio de sesion (SDDM): este equipo no tiene ninguna" si
+agregar futurista "Modo futurista: animaciones holograma, borde neon y cristal; los colores siguen al fondo" si
 agregar terminales "Terminales (Ghostty, Kitty, Alacritty, Foot) con su configuracion y la fuente JetBrainsMono Nerd" si
 agregar apps "Apps: Firefox, nano, cava" si
 agregar herramientas "Herramientas de desarrollo: claude, codex, gh, node, opencode (con mise)" si
@@ -190,7 +191,7 @@ copiar() { # copiar ORIGEN RUTA...: copia esas rutas de ORIGEN a $HOME, respalda
 
 verde "Copiando configuracion"
 H="$REPO/home"
-copiar "$H" .config/niri .config/DankMaterialShell .local/bin/sesion
+copiar "$H" .config/niri .config/DankMaterialShell .config/matugen .local/bin/sesion .local/bin/futurista
 quiere terminales && copiar "$H" .config/alacritty .config/foot .config/ghostty .config/kitty .config/xdg-terminals.list
 quiere herramientas && copiar "$H" .config/mise .claude
 quiere dictado && copiar "$H" .config/voxtype .config/systemd/user/voxtype.service
@@ -201,8 +202,8 @@ else
 fi
 
 # Niri no entiende $HOME en su configuracion: poner la ruta real.
-sed -i "s|/home/jdbritto|$HOME|g" "$HOME/.config/niri/personal.kdl"
-chmod +x "$HOME/.local/bin/sesion"
+sed -i "s|/home/jdbritto|$HOME|g" "$HOME/.config/niri/personal.kdl" "$HOME/.config/matugen/config.toml"
+chmod +x "$HOME/.local/bin/sesion" "$HOME/.local/bin/futurista"
 
 # Comandos propios (sesion) disponibles en la terminal (bash y zsh).
 for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
@@ -272,6 +273,14 @@ if quiere pantalla-inicio; then
   sudo systemctl enable sddm.service || aviso "No se pudo activar la pantalla de inicio (sddm)."
 fi
 
+# ---------------------------------------------------------------- modo futurista
+if quiere futurista; then
+  verde "Activando el modo futurista"
+  "$HOME/.local/bin/futurista" on
+else
+  "$HOME/.local/bin/futurista" off >/dev/null
+fi
+
 # ---------------------------------------------------------------- sesion de inicio
 verde "Eligiendo Niri como escritorio de inicio"
 AUTO=""
@@ -293,6 +302,7 @@ echo "Reinicia el equipo para ver todo aplicado."
 echo
 echo "  - Escritorio: Niri con DankMaterialShell."
 echo "  - Super + K muestra todos los atajos. Super + Tab, la vista general."
+echo "  - Modo futurista (animaciones y efectos):  futurista on  /  futurista off"
 echo "  - Para volver al escritorio de Parrot: elige otra sesion en la pantalla"
 echo "    de inicio, o en una terminal:  sesion parrot"
 echo

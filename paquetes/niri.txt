@@ -10,3 +10,5 @@ xdg-user-dirs
 nautilus
 fonts-noto-core
 fonts-noto-color-emoji
+# Para el comando futurista
+python3
