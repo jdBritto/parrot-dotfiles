@@ -30,6 +30,8 @@ git clone https://github.com/jdBritto/parrot-dotfiles.git ~/parrot-dotfiles
 - Agrega los repositorios oficiales de DankLinux (Niri, Ghostty, matugen…) y de
   DMS, e instala `quickshell` desde `echo-backports` de Parrot, como indica la
   [guía de instalación de DMS](https://danklinux.com/docs/dankmaterialshell/installation).
+- Instala `qt6-wayland` (sin él DMS no abre y el escritorio queda vacío) y
+  agrega tu usuario al grupo `input`.
 - Hace que DMS arranque **solo** con Niri (el paquete de Debian lo activaría
   también en KDE y chocaría con su panel).
 - Copia la configuración de Niri, DMS y las terminales.

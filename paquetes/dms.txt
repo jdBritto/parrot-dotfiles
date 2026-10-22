@@ -1,6 +1,8 @@
 # DankMaterialShell (siempre se instala). quickshell viene de echo-backports
 # y dms del repositorio DankLinux; el instalador agrega los dos.
 dms
+# Sin qt6-wayland, quickshell no abre en Wayland y el escritorio queda vacio
+qt6-wayland
 matugen
 cliphist
 wl-clipboard

@@ -165,6 +165,16 @@ if quiere dictado && ! command -v voxtype >/dev/null; then
   fi
 fi
 
+# Sin el plugin de Wayland para Qt6, DMS se cierra al arrancar y el escritorio
+# queda vacio (solo el cursor). Comprobarlo para no terminar sin avisar.
+QT_PLUGINS=$(dpkg -L qt6-wayland 2>/dev/null | grep -m1 '/platforms/libqwayland' || true)
+[[ -n $QT_PLUGINS ]] || error "Falta el plugin de Wayland de Qt6 (paquete qt6-wayland); DMS no podria abrirse."
+
+# DMS necesita leer el teclado y otros dispositivos de entrada (grupo input).
+if ! id -nG "$USER" | grep -qw input; then
+  sudo usermod -a -G input "$USER" || aviso "No se pudo agregar tu usuario al grupo input."
+fi
+
 # El paquete dms se activa solo para TODAS las sesiones graficas (tambien KDE).
 # Aqui solo debe arrancar con Niri, que ya lo lanza en su configuracion.
 sudo systemctl --global disable dms.service 2>/dev/null || true
