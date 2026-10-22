@@ -1,0 +1,5 @@
+# Terminales (ghostty viene del repositorio DankLinux)
+ghostty
+kitty
+alacritty
+foot

@@ -1,0 +1,2 @@
+# Dictado por voz (voxtype se descarga como .deb desde GitHub)
+wtype

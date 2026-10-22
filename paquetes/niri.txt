@@ -1,0 +1,12 @@
+# Niri (del repositorio DankLinux) y lo que necesita para funcionar bien
+niri
+xwayland-satellite
+xdg-desktop-portal-gnome
+xdg-desktop-portal-gtk
+xdg-terminal-exec
+gnome-keyring
+brightnessctl
+xdg-user-dirs
+nautilus
+fonts-noto-core
+fonts-noto-color-emoji

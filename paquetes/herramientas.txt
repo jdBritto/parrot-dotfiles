@@ -1,0 +1,5 @@
+# Herramientas de desarrollo (mise viene de su propio repositorio; despues
+# mise instala claude, codex, gh, node y opencode segun ~/.config/mise/config.toml)
+mise
+git
+curl

@@ -1,0 +1,2 @@
+# Pantalla de inicio de sesion (solo si el equipo no tiene ninguna)
+sddm

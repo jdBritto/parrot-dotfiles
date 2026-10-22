@@ -1,0 +1,68 @@
+#!/bin/bash
+# Elige con que escritorio arranca el equipo.
+#
+#   sesion niri       -> Niri con DankMaterialShell
+#   sesion parrot     -> el escritorio que traia Parrot (KDE Plasma, MATE...)
+#   sesion alternar   -> cambiar al otro
+#   sesion estado     -> mostrar cual esta elegido
+#
+# Solo hace falta si el equipo entra solo (inicio automatico). Si no, elige
+# el escritorio en el menu de sesion de la pantalla de inicio.
+# Despues de cambiar pregunta si quieres reiniciar el equipo ahora.
+
+SESIONES=(/usr/share/wayland-sessions /usr/share/xsessions)
+
+# Archivo de inicio automatico de la pantalla de inicio (SDDM o LightDM).
+CONF=""
+for f in /etc/sddm.conf.d/*.conf /etc/sddm.conf /etc/lightdm/lightdm.conf; do
+  if [[ -f $f ]] && grep -qE '^(Session|autologin-session)=' "$f"; then CONF=$f; break; fi
+done
+if [[ $CONF == */lightdm/* ]]; then CLAVE=autologin-session; else CLAVE=Session; fi
+
+# El escritorio original de Parrot: el primero que no sea Niri (prefiere Plasma).
+escritorio_parrot() {
+  local f
+  for f in plasma plasmawayland plasmax11 mate xfce lxqt gnome i3; do
+    for d in "${SESIONES[@]}"; do
+      [[ -f $d/$f.desktop ]] && { echo "$f.desktop"; return; }
+    done
+  done
+  for d in "${SESIONES[@]}"; do
+    for f in "$d"/*.desktop; do
+      [[ -e $f && $(basename "$f") != niri* ]] && { basename "$f"; return; }
+    done
+  done
+}
+
+actual() {
+  if grep -qE "^$CLAVE=niri" "$CONF" 2>/dev/null; then echo niri; else echo parrot; fi
+}
+
+cambiar() {
+  local nombre=$1 archivo=$2
+  [[ -n $archivo ]] || { echo "No encontre el escritorio de Parrot instalado."; exit 1; }
+  if [[ $(actual) == "$nombre" ]]; then
+    echo "Ya estaba elegido: $nombre"
+  else
+    # LightDM usa el nombre sin .desktop.
+    [[ $CLAVE == autologin-session ]] && archivo=${archivo%.desktop}
+    sudo sed -i "s|^$CLAVE=.*|$CLAVE=$archivo|" "$CONF" || exit 1
+    echo "Al iniciar sesion se usara: $nombre"
+  fi
+  read -rp "Reiniciar el equipo ahora? Se cerraran todas las ventanas. [s/N] " r
+  if [[ $r =~ ^[sSyY]$ ]]; then systemctl reboot; else echo "El cambio se aplica al reiniciar el equipo."; fi
+}
+
+if [[ -z $CONF ]]; then
+  echo "Este equipo no entra solo: elige el escritorio en la pantalla de inicio"
+  echo "(el menu de sesion). Queda recordado para la proxima vez."
+  exit 0
+fi
+
+case "${1:-estado}" in
+  niri)     cambiar niri niri.desktop ;;
+  parrot)   cambiar parrot "$(escritorio_parrot)" ;;
+  alternar) [[ $(actual) == niri ]] && exec "$0" parrot || exec "$0" niri ;;
+  estado)   echo "Sesion elegida: $(actual)" ;;
+  *)        sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac
