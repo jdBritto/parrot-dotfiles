@@ -199,6 +199,15 @@ copiar() { # copiar ORIGEN RUTA...: copia esas rutas de ORIGEN a $HOME, respalda
   done
 }
 
+# Si DMS esta en marcha (por ejemplo, al reinstalar desde Niri), se para
+# mientras se copian sus archivos; si no, podria sobrescribirlos al cerrarse.
+# Se vuelve a abrir al final.
+DMS_ESTABA=false
+if pgrep -x dms >/dev/null || pgrep -f "qs -p .*dms-shell" >/dev/null; then
+  DMS_ESTABA=true
+  dms kill >/dev/null 2>&1 || true
+fi
+
 verde "Copiando configuracion"
 H="$REPO/home"
 copiar "$H" .config/niri .config/DankMaterialShell .config/matugen .local/bin/sesion .local/bin/futurista
@@ -289,6 +298,44 @@ if quiere futurista; then
   "$HOME/.local/bin/futurista" on
 else
   "$HOME/.local/bin/futurista" off >/dev/null
+fi
+
+# ---------------------------------------------------------------- fondo inicial
+# Sin un fondo elegido, DMS no tiene de donde sacar los colores del tema (ni del
+# modo futurista) ni carpeta para ir cambiando de fondo. Si ya hay uno, se deja.
+verde "Eligiendo el fondo de pantalla"
+FONDO=""
+CARPETA_FONDOS=""
+if [[ -d $HOME/Pictures/Fondos ]] && ls "$HOME/Pictures/Fondos" | grep -q .; then
+  CARPETA_FONDOS="$HOME/Pictures/Fondos"
+  FONDO="$CARPETA_FONDOS/wallpapers-EchoWallpaper-contents-images-1920x1080.png"
+  [[ -e $FONDO ]] || FONDO="$CARPETA_FONDOS/$(ls "$CARPETA_FONDOS" | head -n1)"
+elif [[ -e /usr/share/backgrounds/default.jpg ]]; then
+  FONDO=/usr/share/backgrounds/default.jpg
+fi
+if [[ -n $FONDO ]]; then
+  SESION_DMS="$HOME/.local/state/DankMaterialShell/session.json"
+  mkdir -p "$(dirname "$SESION_DMS")"
+  python3 -I - "$SESION_DMS" "$FONDO" "$CARPETA_FONDOS" <<'PY'
+import json, os, sys
+ruta, fondo, carpeta = sys.argv[1:4]
+d = json.load(open(ruta)) if os.path.exists(ruta) else {}
+if not d.get("wallpaperPath"):
+    d["wallpaperPath"] = fondo
+    print("Fondo:", fondo)
+else:
+    print("Se mantiene tu fondo:", d["wallpaperPath"])
+if carpeta and not d.get("wallpaperCyclingFolderPath"):
+    d["wallpaperCyclingFolderPath"] = carpeta
+json.dump(d, open(ruta, "w"), indent=2)
+PY
+else
+  aviso "No encontre fondos; elige uno con Super + Ctrl + Espacio."
+fi
+
+# Volver a abrir DMS si estaba en marcha y estamos dentro de Niri.
+if $DMS_ESTABA && [[ -n ${NIRI_SOCKET:-} ]]; then
+  niri msg action spawn -- dms run >/dev/null 2>&1 || aviso "Abre DMS con: dms run"
 fi
 
 # ---------------------------------------------------------------- sesion de inicio
