@@ -35,7 +35,9 @@ git clone https://github.com/jdBritto/parrot-dotfiles.git ~/parrot-dotfiles
 - Hace que DMS arranque **solo** con Niri (el paquete de Debian lo activaría
   también en KDE y chocaría con su panel).
 - Copia la configuración de Niri, DMS y las terminales.
-- Opcional: terminales con la fuente JetBrainsMono Nerd, Firefox, herramientas
+- Opcional: terminales con la fuente JetBrainsMono Nerd, Firefox, tienda de apps
+  [Bazaar](https://github.com/kolunmi/bazaar) con Flatpak y Flathub (abre los
+  `.flatpak` con doble clic), herramientas
   de desarrollo con `mise` (claude, codex, gh, node, opencode), dictado por voz
   (voxtype), galería de fondos con los de Parrot y ajustes para VMware (solo se
   ofrecen si detecta una máquina virtual VMware).

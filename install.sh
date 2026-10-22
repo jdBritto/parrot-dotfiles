@@ -63,6 +63,7 @@ $TIENE_PANTALLA_INICIO || agregar pantalla-inicio "Pantalla de inicio de sesion 
 agregar futurista "Modo futurista: animaciones holograma, borde neon y cristal; los colores siguen al fondo" si
 agregar terminales "Terminales (Ghostty, Kitty, Alacritty, Foot) con su configuracion y la fuente JetBrainsMono Nerd" si
 agregar apps "Apps: Firefox, nano, cava" si
+agregar tienda "Tienda de apps (Bazaar + Flatpak con Flathub); abre los .flatpak con doble clic" si
 agregar herramientas "Herramientas de desarrollo: claude, codex, gh, node, opencode (con mise)" si
 [[ $ARQ == amd64 ]] && agregar dictado "Dictado por voz (voxtype, Super + Ctrl + X)" si
 agregar fondos "Galeria de fondos en ~/Pictures/Fondos (los fondos que trae Parrot)" si
@@ -273,6 +274,20 @@ if quiere herramientas; then
   done
 fi
 
+# ---------------------------------------------------------------- tienda de apps (Flatpak)
+# Flatpak solo se usa desde la terminal; Bazaar es la tienda grafica y la que
+# abre los archivos .flatpak con doble clic. No depende de GNOME ni de KDE.
+if quiere tienda; then
+  verde "Instalando la tienda de apps (Bazaar) desde Flathub"
+  sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo ||
+    aviso "No se pudo agregar Flathub."
+  if sudo flatpak install -y --noninteractive flathub io.github.kolunmi.Bazaar; then
+    xdg-mime default io.github.kolunmi.Bazaar.desktop application/vnd.flatpak application/vnd.flatpak.ref 2>/dev/null || true
+  else
+    aviso "No se pudo instalar Bazaar; reintenta luego con: flatpak install flathub io.github.kolunmi.Bazaar"
+  fi
+fi
+
 # ---------------------------------------------------------------- dictado (voxtype)
 if quiere dictado && command -v voxtype >/dev/null; then
   verde "Configurando dictado por voz (voxtype)"
@@ -360,6 +375,7 @@ echo
 echo "  - Escritorio: Niri con DankMaterialShell."
 echo "  - Super + K muestra todos los atajos. Super + Tab, la vista general."
 echo "  - Modo futurista (animaciones y efectos):  futurista on  /  futurista off"
+quiere tienda && echo "  - Tienda de apps: Bazaar (los .flatpak se abren con doble clic)"
 echo "  - Para volver al escritorio de Parrot: elige otra sesion en la pantalla"
 echo "    de inicio, o en una terminal:  sesion parrot"
 echo

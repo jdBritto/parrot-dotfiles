@@ -1,0 +1,2 @@
+# Tienda de apps grafica: Flatpak (la tienda Bazaar se instala desde Flathub)
+flatpak
