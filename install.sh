@@ -1,7 +1,7 @@
 #!/bin/bash
 # Instala mi escritorio Niri + DankMaterialShell (DMS) en Parrot OS 7.
 # (Tambien sirve en Debian 13 "trixie", que es la base de Parrot 7.)
-# Al empezar muestra una lista para elegir que instalar.
+# Al empezar muestra un menu para elegir que instalar (flechas y Espacio).
 #
 # Uso:  ./install.sh         (pregunta todo)
 #       ./install.sh --si    (sin preguntas: lo recomendado)
@@ -54,53 +54,87 @@ systemctl is-enabled display-manager.service &>/dev/null && TIENE_PANTALLA_INICI
 echo "Sistema: $PRETTY_NAME ($ARQ)"
 echo "Maquina virtual VMware: $ES_VMWARE"
 
-# ---------------------------------------------------------------- que instalar
-IDS=()
-declare -A DESC MARCA
-agregar() { IDS+=("$1"); DESC[$1]=$2; MARCA[$1]=$3; }
-
-$TIENE_PANTALLA_INICIO || agregar pantalla-inicio "Pantalla de inicio de sesion (SDDM): este equipo no tiene ninguna" si
-agregar futurista "Modo futurista: animaciones holograma, borde neon y cristal; los colores siguen al fondo" si
-agregar terminales "Terminales (Ghostty, Kitty, Alacritty, Foot) con su configuracion y la fuente JetBrainsMono Nerd" si
-agregar apps "Apps: Firefox, nano, cava" si
-agregar tienda "Tienda de apps (Bazaar + Flatpak con Flathub); abre los .flatpak con doble clic" si
-agregar herramientas "Herramientas de desarrollo: claude, codex, gh, node, opencode (con mise)" si
-[[ $ARQ == amd64 ]] && agregar dictado "Dictado por voz (voxtype, Super + Ctrl + X)" si
-agregar fondos "Galeria de fondos en ~/Pictures/Fondos (los fondos que trae Parrot)" si
-$ES_VMWARE && agregar vmware "Ajustes para VMware (resolucion, renderizado, herramientas)" si
-
-quiere() { [[ ${MARCA[$1]:-no} == si ]]; }
-
-mostrar_menu() {
-  echo
-  echo "Que quieres instalar? Niri y DankMaterialShell se instalan siempre."
-  local i=1 x
-  for id in "${IDS[@]}"; do
-    if quiere "$id"; then x="x"; else x=" "; fi
-    printf '  %2d) [%s] %s\n' "$i" "$x" "${DESC[$id]}"
+# ---------------------------------------------------------------- logo
+logo() {
+  local colores=(51 45 39 63 99 135) i=0 linea
+  while IFS= read -r linea; do
+    printf '\033[1;38;5;%sm%s\033[0m\n' "${colores[i % ${#colores[@]}]}" "$linea"
     i=$((i + 1))
-  done
+  done <<'LOGO'
+
+  ███╗   ██╗██╗██████╗ ██╗       ██████╗ ███╗   ███╗███████╗
+  ████╗  ██║██║██╔══██╗██║       ██╔══██╗████╗ ████║██╔════╝
+  ██╔██╗ ██║██║██████╔╝██║  ━╋━  ██║  ██║██╔████╔██║███████╗
+  ██║╚██╗██║██║██╔══██╗██║       ██║  ██║██║╚██╔╝██║╚════██║
+  ██║ ╚████║██║██║  ██║██║       ██████╔╝██║ ╚═╝ ██║███████║
+  ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝╚═╝       ╚═════╝ ╚═╝     ╚═╝╚══════╝
+LOGO
+  printf '\033[2m  Escritorio Niri + DankMaterialShell para %s\033[0m\n\n' "${PRETTY_NAME:-Parrot OS 7}"
 }
 
-if $PREGUNTAR; then
+# ---------------------------------------------------------------- que instalar
+IDS=()
+declare -A NOMBRE DESC MARCA
+agregar() { IDS+=("$1"); NOMBRE[$1]=$2; DESC[$1]=$3; MARCA[$1]=$4; }
+
+$TIENE_PANTALLA_INICIO || agregar pantalla-inicio "Pantalla de inicio (SDDM)" "Este equipo no tiene pantalla de inicio de sesion; instala SDDM." si
+agregar futurista "Modo futurista" "Animaciones holograma, borde neon y cristal; los colores siguen al fondo." si
+agregar terminales "Terminales" "Ghostty, Kitty, Alacritty y Foot con su configuracion y la fuente JetBrainsMono Nerd." si
+agregar apps "Apps" "Firefox, nano y cava." si
+agregar tienda "Tienda de apps (Bazaar)" "Flatpak con Flathub y la tienda Bazaar; abre los .flatpak con doble clic." no
+agregar herramientas "Herramientas de desarrollo" "claude, codex, gh, node y opencode (con mise)." si
+[[ $ARQ == amd64 ]] && agregar dictado "Dictado por voz" "voxtype: dictas con Super + Ctrl + X." si
+agregar fondos "Galeria de fondos" "Enlaza los fondos que trae Parrot en ~/Pictures/Fondos." si
+$ES_VMWARE && agregar vmware "Ajustes para VMware" "Resolucion, renderizado y herramientas de la maquina virtual." si
+
+quiere() { [[ ${MARCA[$1]:-no} == si ]]; }
+cambiar() { if quiere "$1"; then MARCA[$1]=no; else MARCA[$1]=si; fi; }
+
+# Menu con flechas: se mueve con arriba/abajo (o j/k), Espacio marca o desmarca.
+menu() {
+  local actual=0 total=${#IDS[@]} tecla resto i id marca
+  printf '\033[?25l'                 # ocultar el cursor mientras se elige
+  trap 'printf "\033[?25h"' EXIT
   while true; do
-    mostrar_menu
-    echo "Escribe los numeros que quieres marcar o desmarcar (ej: 2 4) y Enter."
-    read -rp "Enter sin nada para continuar: " r
-    [[ -z $r ]] && break
-    for n in $r; do
-      if [[ $n =~ ^[0-9]+$ ]] && ((n >= 1 && n <= ${#IDS[@]})); then
-        id=${IDS[n - 1]}
-        if quiere "$id"; then MARCA[$id]=no; else MARCA[$id]=si; fi
+    printf '\033[H\033[2J'
+    logo
+    echo "  Elige que instalar (Niri y DankMaterialShell se instalan siempre):"
+    echo
+    for i in "${!IDS[@]}"; do
+      id=${IDS[i]}
+      if quiere "$id"; then marca='\033[1;32m[x]\033[0m'; else marca='\033[2m[ ]\033[0m'; fi
+      if ((i == actual)); then
+        printf '  \033[1;36m❯\033[0m %b \033[1;36m%s\033[0m\n' "$marca" "${NOMBRE[$id]}"
       else
-        aviso "Numero no valido: $n"
+        printf '    %b %s\n' "$marca" "${NOMBRE[$id]}"
       fi
     done
-  done
-fi
+    printf '\n  \033[3m%s\033[0m\n\n' "${DESC[${IDS[actual]}]}"
+    printf '  \033[2m↑↓ moverse   Espacio marcar   a todo   n nada   Enter continuar   q salir\033[0m\n'
 
-echo
-echo "Se va a instalar: Niri, DankMaterialShell$(for id in "${IDS[@]}"; do quiere "$id" && printf ', %s' "$id"; done)"
+    IFS= read -rsn1 tecla || exit 1
+    if [[ $tecla == $'\e' ]]; then   # las flechas llegan como Esc + [A / [B
+      IFS= read -rsn2 -t 0.1 resto || true
+      tecla+=$resto
+    fi
+    case $tecla in
+      $'\e[A' | k) actual=$(((actual - 1 + total) % total)) ;;
+      $'\e[B' | j) actual=$(((actual + 1) % total)) ;;
+      ' ') cambiar "${IDS[actual]}" ;;
+      [1-9]) if ((tecla <= total)); then actual=$((tecla - 1)); cambiar "${IDS[actual]}"; fi ;;
+      a | A) for id in "${IDS[@]}"; do MARCA[$id]=si; done ;;
+      n | N) for id in "${IDS[@]}"; do MARCA[$id]=no; done ;;
+      '') break ;;
+      q | Q) printf '\033[H\033[2J'; echo "Cancelado. No se cambio nada."; exit 0 ;;
+    esac
+  done
+  printf '\033[?25h\033[H\033[2J'
+  logo
+}
+
+if $PREGUNTAR; then menu; else logo; fi
+
+echo "Se va a instalar: Niri, DankMaterialShell$(for id in "${IDS[@]}"; do quiere "$id" && printf ', %s' "${NOMBRE[$id]}"; done)"
 if $PREGUNTAR; then
   read -rp "Continuar? [S/n] " r
   [[ $r =~ ^[nN]$ ]] && { echo "Cancelado. No se cambio nada."; exit 0; }

@@ -19,9 +19,10 @@ git clone https://github.com/jdBritto/parrot-dotfiles.git ~/parrot-dotfiles
 ~/parrot-dotfiles/install.sh
 ```
 
-   Al empezar muestra una lista para elegir qué instalar (escribes los números
-   para marcar o desmarcar). Para instalar lo recomendado sin preguntas:
-   `install.sh --si`.
+   Al empezar muestra un menú para elegir qué instalar: te mueves con las
+   flechas (o `j`/`k`), marcas o desmarcas con **Espacio** (o con el número de
+   la opción), `a` marca todo, `n` nada, **Enter** continúa y `q` sale sin
+   cambiar nada. Para instalar lo recomendado sin preguntas: `install.sh --si`.
 
 3. Reinicia y, en la pantalla de inicio, elige la sesión **Niri**.
 
@@ -37,7 +38,7 @@ git clone https://github.com/jdBritto/parrot-dotfiles.git ~/parrot-dotfiles
 - Copia la configuración de Niri, DMS y las terminales.
 - Opcional: terminales con la fuente JetBrainsMono Nerd, Firefox, tienda de apps
   [Bazaar](https://github.com/kolunmi/bazaar) con Flatpak y Flathub (abre los
-  `.flatpak` con doble clic), herramientas
+  `.flatpak` con doble clic; viene desmarcada), herramientas
   de desarrollo con `mise` (claude, codex, gh, node, opencode), dictado por voz
   (voxtype), galería de fondos con los de Parrot y ajustes para VMware (solo se
   ofrecen si detecta una máquina virtual VMware).
