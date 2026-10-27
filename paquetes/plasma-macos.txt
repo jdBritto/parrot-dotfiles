@@ -1,0 +1,9 @@
+# KDE Plasma con forma de macOS e identidad Parrot (iconos, verde, logo, fondo).
+# Estilo de los controles (tema WhiteSurParrot)
+qt-style-kvantum
+# Fuente Inter, la mas parecida a la de Mac
+fonts-inter
+# Menu de la app en la barra de arriba tambien para apps GTK
+appmenu-gtk3-module
+# Pantalla de inicio estilo macOS
+sddm

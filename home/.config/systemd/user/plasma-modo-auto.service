@@ -1,0 +1,7 @@
+[Unit]
+Description=Plasma estilo macOS: claro de dia, oscuro de noche
+After=plasma-plasmashell.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/estilo-plasma auto

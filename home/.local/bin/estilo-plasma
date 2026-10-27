@@ -1,0 +1,256 @@
+#!/bin/bash
+# Cambia el aspecto de KDE Plasma entre un estilo Windows 11 y uno macOS.
+# Ejecutar DENTRO de una sesion de Plasma (no afecta a Niri).
+#
+#   estilo-plasma windows    -> tema Fluent + barra abajo centrada (Windows 11)
+#   estilo-plasma macos      -> forma de macOS con identidad Parrot (iconos, verde, logo, fondo)
+#   estilo-plasma oscuro     -> macOS en modo oscuro (solo cambia colores, no las barras)
+#   estilo-plasma claro      -> macOS en modo claro
+#   estilo-plasma auto       -> claro de dia y oscuro de noche (lo usa el temporizador)
+#   estilo-plasma deshacer   -> volver a como estaba Plasma antes de todo esto
+#
+# Los temas Fluent y WhiteSur deben estar en ~/.local/share (instalados por usuario).
+
+set -u
+BACKUP="$HOME/.config/backup-plasma-windows11"   # estado original, antes de cualquier estilo
+ARCHIVOS=(kdeglobals kwinrc plasmarc kcminputrc kglobalshortcutsrc
+          plasma-org.kde.plasma.desktop-appletsrc plasmashellrc)
+FONDOS="$HOME/.local/share/wallpapers"
+HORA_CLARO=7     # desde esta hora, modo claro
+HORA_OSCURO=19   # desde esta hora, modo oscuro
+
+uso() { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+
+en_plasma() {
+  [[ ${XDG_CURRENT_DESKTOP:-} == *KDE* ]] && pgrep -x plasmashell >/dev/null
+}
+
+script_plasma() {
+  qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "$1"
+}
+
+poner_fondo() {
+  [[ -f $1 ]] && plasma-apply-wallpaperimage "$1" >/dev/null 2>&1
+}
+
+aplicar_tema() {  # $1 = paquete look-and-feel, $2 = tema Kvantum, $3 = cursor
+  plasma-apply-lookandfeel -a "$1" >/dev/null 2>&1
+  mkdir -p "$HOME/.config/Kvantum"
+  printf '[General]\ntheme=%s\n' "$2" > "$HOME/.config/Kvantum/kvantum.kvconfig"
+  plasma-apply-cursortheme "$3" >/dev/null 2>&1
+  # Doble clic para abrir archivos y tecla Windows/Cmd sola = menu de aplicaciones.
+  kwriteconfig6 --file kdeglobals --group KDE --key SingleClick false
+  kwriteconfig6 --file kwinrc --group ModifierOnlyShortcuts --key Meta \
+    "org.kde.plasmashell,/PlasmaShell,org.kde.PlasmaShell,activateLauncherMenu"
+}
+
+# Marco de ventana. Se fija a mano porque el tema global no siempre lo guarda.
+marco_ventana() {  # $1 = tema aurorae, $2 = botones izquierda, $3 = botones derecha
+  kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key library org.kde.kwin.aurorae
+  kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme "__aurorae__svg__$1"
+  kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key ButtonsOnLeft "$2"
+  kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key ButtonsOnRight "$3"
+}
+
+fuente() {  # $1 = familia, o vacio para volver a la de serie
+  local k
+  for k in font menuFont toolBarFont; do
+    if [[ -n $1 ]]; then
+      kwriteconfig6 --file kdeglobals --group General --key $k "$1,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+    else
+      kwriteconfig6 --file kdeglobals --group General --key $k --delete
+    fi
+  done
+  if [[ -n $1 ]]; then
+    kwriteconfig6 --file kdeglobals --group General --key smallestReadableFont "$1,8,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+    kwriteconfig6 --file kdeglobals --group WM --key activeFont "$1,10,-1,5,600,0,0,0,0,0,0,0,0,0,0,1"
+  else
+    kwriteconfig6 --file kdeglobals --group General --key smallestReadableFont --delete
+    kwriteconfig6 --file kdeglobals --group WM --key activeFont --delete
+  fi
+}
+
+# Tema macOS con identidad Parrot, claro u oscuro. No toca las barras.
+# Forma de macOS (WhiteSur) + iconos, verde, logo y fondo de Parrot.
+ICONOS_PARROT=Flat-Remix-Green-Dark
+FONDO_PARROT=/usr/share/wallpapers/EchoWallpaper
+tema_macos() {  # $1 = claro | oscuro
+  local lnf="" plasma="" colores=WhiteSurParrot
+  [[ $1 == oscuro ]] && { lnf="-dark"; plasma="-dark"; colores=WhiteSurParrotDark; }
+  aplicar_tema "com.github.vinceliuice.WhiteSur$lnf" WhiteSurParrot WhiteSur-cursors
+  # Botones cerrar, minimizar, maximizar a la izquierda (orden de Mac).
+  marco_ventana "WhiteSur$lnf" XIA ""
+  # Verde Parrot en vez del azul de macOS (colores, barra y controles).
+  plasma-apply-colorscheme "$colores" >/dev/null 2>&1
+  plasma-apply-desktoptheme "WhiteSurParrot$plasma" >/dev/null 2>&1
+  # Iconos de Parrot.
+  local cambiar=/usr/lib/x86_64-linux-gnu/libexec/plasma-changeicons
+  if [[ -x $cambiar ]]; then "$cambiar" "$ICONOS_PARROT" >/dev/null 2>&1
+  else kwriteconfig6 --file kdeglobals --group Icons --key Theme "$ICONOS_PARROT"; fi
+  # Fondo de Parrot (Echo). El paquete elige la resolucion de cada pantalla.
+  [[ -d $FONDO_PARROT ]] && plasma-apply-wallpaperimage "$FONDO_PARROT" >/dev/null 2>&1
+  # Logo de Parrot arriba a la izquierda, donde Mac pone la manzana.
+  script_plasma '
+panels().forEach(function (p) { p.widgets("org.kde.plasma.kickoff").forEach(function (w) {
+  w.currentConfigGroup = ["General"]; w.writeConfig("icon", "parrotos-mono-symbolic"); }); });
+' >/dev/null 2>&1
+}
+
+recargar() {
+  qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1
+}
+
+if ! en_plasma; then
+  [[ ${1:-} == auto ]] && exit 0   # el temporizador no hace nada fuera de Plasma
+  echo "Este comando hay que ejecutarlo dentro de KDE Plasma."
+  echo "Cierra sesion, elige 'Plasma' en la pantalla de inicio y vuelve a ejecutarlo."
+  exit 1
+fi
+
+# Guardar el estado original una sola vez (compartido con estilo-windows11).
+if [[ ! -d $BACKUP ]]; then
+  mkdir -p "$BACKUP"
+  for f in "${ARCHIVOS[@]}"; do
+    [[ -f $HOME/.config/$f ]] && cp -a "$HOME/.config/$f" "$BACKUP/"
+  done
+  echo "Copia de la configuracion original en: $BACKUP"
+fi
+
+case ${1:-} in
+# ---------------------------------------------------------------- Windows 11
+windows)
+  echo "Aplicando estilo Windows 11 (Fluent)..."
+  aplicar_tema com.github.vinceliuice.Fluent-round-light Fluent-round Fluent-cursors
+  marco_ventana Fluent-round-light "" IAX
+  fuente ""
+  kwriteconfig6 --file krunnerrc --group General --key FreeFloating --delete
+  recargar
+  poner_fondo "$FONDOS/Fluent-round-light/contents/images/3840x2160.png"
+  script_plasma '
+panels().forEach(function (p) { p.remove(); });
+var p = new Panel;
+p.location = "bottom"; p.height = 48; p.alignment = "center"; p.lengthMode = "fill";
+try { p.floating = false; } catch (e) {}
+try { p.hiding = "none"; } catch (e) {}
+p.addWidget("org.kde.plasma.panelspacer");
+var inicio = p.addWidget("org.kde.plasma.kickoff");
+inicio.currentConfigGroup = ["General"];
+inicio.writeConfig("icon", "start-here-kde-symbolic");
+inicio.writeConfig("favoritesDisplay", 0);
+inicio.writeConfig("applicationsDisplay", 1);
+var tareas = p.addWidget("org.kde.plasma.icontasks");
+tareas.currentConfigGroup = ["General"];
+tareas.writeConfig("launchers", ["preferred://filemanager", "preferred://browser", "applications:kitty.desktop"]);
+tareas.writeConfig("iconSpacing", 1);
+p.addWidget("org.kde.plasma.panelspacer");
+p.addWidget("org.kde.plasma.systemtray");
+var reloj = p.addWidget("org.kde.plasma.digitalclock");
+reloj.currentConfigGroup = ["Appearance"];
+reloj.writeConfig("showDate", true);
+reloj.writeConfig("dateFormat", "shortDate");
+reloj.writeConfig("dateDisplayFormat", "BelowTime");
+p.addWidget("org.kde.plasma.showdesktop");
+' || { echo "No se pudo crear la barra."; exit 1; }
+  echo
+  echo "Listo: estilo Windows 11."
+  echo "  Barra abajo con Inicio y apps al centro | botones de ventana a la derecha"
+  echo "  Tecla Windows: menu | Win+E: archivos | Win+D: escritorio | Win+L: bloquear"
+  ;;
+
+# ---------------------------------------------------------------- macOS
+macos)
+  echo "Aplicando estilo macOS (WhiteSur)..."
+  tema_macos claro
+  # Fuente Inter, la mas parecida a la de Mac (San Francisco).
+  fuente Inter
+  # Transparencia con desenfoque en menus y barra, y efecto "genio" al minimizar.
+  kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true
+  kwriteconfig6 --file kwinrc --group Plugins --key magiclampEnabled true
+  # Buscador al centro de la pantalla, como Spotlight. Meta+Espacio lo abre (como Cmd+Espacio).
+  kwriteconfig6 --file krunnerrc --group General --key FreeFloating true
+  kwriteconfig6 --file kglobalshortcutsrc --group services --group org.kde.krunner.desktop \
+    --key _launch "Alt+Space	Meta+Space	Alt+F2	Search"
+  recargar
+  script_plasma '
+panels().forEach(function (p) { p.remove(); });
+
+// Barra superior: menu, menu global de la app, reloj y bandeja.
+var top = new Panel;
+top.location = "top"; top.height = 28; top.lengthMode = "fill";
+try { top.floating = false; } catch (e) {}
+var menu = top.addWidget("org.kde.plasma.kickoff");
+menu.currentConfigGroup = ["General"];
+menu.writeConfig("icon", "parrotos-mono-symbolic");
+top.addWidget("org.kde.plasma.appmenu");
+top.addWidget("org.kde.plasma.panelspacer");
+top.addWidget("org.kde.plasma.systemtray");
+var reloj = top.addWidget("org.kde.plasma.digitalclock");
+reloj.currentConfigGroup = ["Appearance"];
+reloj.writeConfig("showDate", true);
+reloj.writeConfig("dateDisplayFormat", "BesideTime");
+
+// Dock inferior flotante y centrado.
+var dock = new Panel;
+dock.location = "bottom"; dock.height = 56; dock.alignment = "center"; dock.lengthMode = "fit";
+try { dock.floating = true; } catch (e) {}
+try { dock.hiding = "dodgewindows"; } catch (e) {}
+// Launchpad: todas las apps en pantalla completa.
+var launchpad = dock.addWidget("org.kde.plasma.kickerdash");
+launchpad.currentConfigGroup = ["General"];
+launchpad.writeConfig("icon", "view-app-grid-symbolic");
+var tareas = dock.addWidget("org.kde.plasma.icontasks");
+tareas.currentConfigGroup = ["General"];
+tareas.writeConfig("launchers", ["preferred://filemanager", "preferred://browser", "applications:kitty.desktop", "applications:systemsettings.desktop"]);
+tareas.writeConfig("iconSpacing", 2);
+dock.addWidget("org.kde.plasma.marginsseparator");
+dock.addWidget("org.kde.plasma.trash");
+' || { echo "No se pudo crear la barra."; exit 1; }
+  echo
+  echo "Listo: estilo macOS."
+  echo "  Barra arriba con el menu de cada app | dock abajo que se aparta de las ventanas"
+  echo "  Botones de ventana a la izquierda | fuente Inter | transparencias"
+  echo "  Meta+Espacio: buscador (como Spotlight) | Meta+W: ver todas las ventanas"
+  echo "  Primer icono del dock: todas las apps (como Launchpad) | papelera al final"
+  ;;
+
+# ---------------------------------------------------------------- claro / oscuro
+claro|oscuro)
+  if ! grep -q 'WhiteSur' "$HOME/.config/kdeglobals" "$HOME/.config/kwinrc" 2>/dev/null; then
+    echo "Primero aplica el estilo macOS: estilo-plasma macos"; exit 1
+  fi
+  echo "Cambiando macOS a modo $1..."
+  tema_macos "$1"
+  recargar
+  echo "Listo: modo $1."
+  ;;
+
+# ---------------------------------------------------------------- auto
+auto)
+  actual=$(kreadconfig6 --file kdeglobals --group General --key ColorScheme)
+  [[ $actual == WhiteSurParrot* ]] || exit 0   # solo con el estilo macOS puesto
+  hora=$((10#$(date +%H)))
+  if (( hora >= HORA_CLARO && hora < HORA_OSCURO )); then modo=claro; else modo=oscuro; fi
+  [[ $modo == oscuro && $actual == WhiteSurParrotDark ]] && exit 0
+  [[ $modo == claro && $actual == WhiteSurParrot ]] && exit 0
+  tema_macos "$modo"
+  recargar
+  echo "Modo $modo aplicado automaticamente."
+  exit 0
+  ;;
+
+# ---------------------------------------------------------------- deshacer
+deshacer)
+  [[ -d $BACKUP ]] || { echo "No hay copia guardada en $BACKUP"; exit 1; }
+  for f in "${ARCHIVOS[@]}"; do
+    [[ -f $BACKUP/$f ]] && cp -a "$BACKUP/$f" "$HOME/.config/$f"
+  done
+  qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1
+  systemctl --user restart plasma-plasmashell.service 2>/dev/null \
+    || { kquitapp6 plasmashell 2>/dev/null; (setsid plasmashell >/dev/null 2>&1 &); }
+  echo "Listo: Plasma volvio a como estaba al principio."
+  ;;
+*) uso ;;
+esac
+
+echo "Las ventanas que ya estaban abiertas toman el tema nuevo al volver a abrirlas."
+echo "Si algo no se ve bien, cierra sesion y vuelve a entrar."

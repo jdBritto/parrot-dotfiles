@@ -1,0 +1,62 @@
+#!/bin/bash
+# Cambia la pantalla de inicio de sesion. Pide la contrasena en una ventana (pkexec).
+#
+#   pantalla-login macos     -> SDDM con tema macOS + Parrot (WhiteSurParrot)
+#   pantalla-login lightdm   -> volver a LightDM, como venia Parrot
+#
+# El cambio se ve al reiniciar el equipo. Si algo falla y no ves la pantalla de
+# inicio: Ctrl+Alt+F3, entra con tu usuario y ejecuta  sudo ~/.local/bin/pantalla-login lightdm
+
+set -euo pipefail
+TEMA_ORIGEN="${TEMA_ORIGEN:-$HOME/.local/share/sddm-themes/WhiteSurParrot}"
+
+if [[ $EUID -ne 0 ]]; then
+  exec pkexec env TEMA_ORIGEN="$TEMA_ORIGEN" "$(readlink -f "$0")" "$@"
+fi
+
+COPIA=/etc/backup-pantalla-login
+mkdir -p "$COPIA"
+for f in /etc/sddm.conf /etc/sddm.conf.d/kde_settings.conf /etc/X11/default-display-manager; do
+  [[ -f $f && ! -f $COPIA/$(basename "$f") ]] && cp -a "$f" "$COPIA/"
+done
+
+usar_gestor() {  # $1 = ruta del binario, $2 = servicio
+  echo "$1" > /etc/X11/default-display-manager
+  ln -sf "/lib/systemd/system/$2.service" /etc/systemd/system/display-manager.service
+}
+
+case ${1:-} in
+macos)
+  [[ -f $TEMA_ORIGEN/Main.qml ]] || { echo "No encuentro el tema en $TEMA_ORIGEN"; exit 1; }
+  rm -rf /usr/share/sddm/themes/WhiteSurParrot
+  cp -r "$TEMA_ORIGEN" /usr/share/sddm/themes/WhiteSurParrot
+  chown -R root:root /usr/share/sddm/themes/WhiteSurParrot
+  chmod -R u=rwX,go=rX /usr/share/sddm/themes/WhiteSurParrot
+  mkdir -p /etc/sddm.conf.d
+  cat > /etc/sddm.conf.d/10-parrot-macos.conf <<'EOF'
+[Theme]
+Current=WhiteSurParrot
+Font=Inter,10
+EOF
+  # kde_settings.conf se lee despues y fijaba echo-sddm: lo apunto al tema nuevo.
+  if [[ -f /etc/sddm.conf.d/kde_settings.conf ]]; then
+    sed -i 's/^Current=.*/Current=WhiteSurParrot/' /etc/sddm.conf.d/kde_settings.conf
+  fi
+  # Quitar el inicio automatico en Niri para que siempre se vea la pantalla de inicio.
+  if [[ -f /etc/sddm.conf ]]; then
+    sed -i '/^\[Autologin\]/,/^\[/{/^\[Autologin\]/d;/^Session=/d}' /etc/sddm.conf
+  fi
+  usar_gestor /usr/sbin/sddm sddm
+  echo "Listo: SDDM con estilo macOS. Se vera al reiniciar."
+  ;;
+lightdm)
+  for f in sddm.conf kde_settings.conf; do
+    [[ -f $COPIA/$f ]] || continue
+    [[ $f == sddm.conf ]] && cp -a "$COPIA/$f" /etc/sddm.conf || cp -a "$COPIA/$f" /etc/sddm.conf.d/
+  done
+  rm -f /etc/sddm.conf.d/10-parrot-macos.conf
+  usar_gestor /usr/sbin/lightdm lightdm
+  echo "Listo: vuelve LightDM. Se vera al reiniciar."
+  ;;
+*) sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

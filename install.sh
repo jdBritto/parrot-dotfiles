@@ -78,6 +78,7 @@ declare -A NOMBRE DESC MARCA
 agregar() { IDS+=("$1"); NOMBRE[$1]=$2; DESC[$1]=$3; MARCA[$1]=$4; }
 
 $TIENE_PANTALLA_INICIO || agregar pantalla-inicio "Pantalla de inicio (SDDM)" "Este equipo no tiene pantalla de inicio de sesion; instala SDDM." si
+command -v plasmashell >/dev/null && agregar plasma-macos "KDE Plasma estilo macOS (Parrot)" "Barra arriba con el menu de la app, dock abajo, botones de Mac y Spotlight (Meta+Espacio), con los iconos, el verde, el logo y el fondo de Parrot. Claro de dia y oscuro de noche. Incluye la pantalla de inicio estilo macOS (SDDM)." no
 agregar futurista "Modo futurista" "Animaciones holograma, borde neon y cristal; los colores siguen al fondo." si
 agregar terminales "Terminales" "Ghostty, Kitty, Alacritty y Foot con su configuracion y la fuente JetBrainsMono Nerd." si
 agregar apps "Apps" "Firefox, nano y cava." si
@@ -224,13 +225,14 @@ copiar() { # copiar ORIGEN RUTA...: copia esas rutas de ORIGEN a $HOME, respalda
     while IFS= read -r -d '' f; do
       rel=${f#"$origen"/}
       destino="$HOME/$rel"
-      if [[ -e $destino ]] && ! cmp -s "$f" "$destino"; then
+      if [[ -e $destino && ! -L $f ]] && ! cmp -s "$f" "$destino"; then
         mkdir -p "$(dirname "$RESPALDO/$rel")"
         cp -a "$destino" "$RESPALDO/$rel"
       fi
       mkdir -p "$(dirname "$destino")"
+      [[ -L $f ]] && rm -f "$destino"   # los enlaces se reemplazan tal cual
       cp -a "$f" "$destino"
-    done < <(find "$origen/$ruta" -type f -print0)
+    done < <(find "$origen/$ruta" \( -type f -o -type l \) -print0)
   done
 }
 
@@ -246,6 +248,17 @@ fi
 verde "Copiando configuracion"
 H="$REPO/home"
 copiar "$H" .config/niri .config/DankMaterialShell .config/matugen .local/bin/sesion .local/bin/futurista
+if quiere plasma-macos; then
+  copiar "$H" .local/bin/estilo-plasma .local/bin/pantalla-login .local/share/plasma .local/share/aurorae \
+    .local/share/color-schemes/WhiteSurParrot.colors .local/share/color-schemes/WhiteSurParrotDark.colors \
+    .config/Kvantum/WhiteSurParrot .local/share/icons/WhiteSur-cursors .local/share/icons/hicolor \
+    .local/share/sddm-themes/WhiteSurParrot .config/plasma-workspace/env/appmenu-gtk.sh \
+    .config/systemd/user/plasma-modo-auto.service .config/systemd/user/plasma-modo-auto.timer
+  # El logo de Parrot necesita el indice de iconos hicolor junto a el.
+  [[ -f $HOME/.local/share/icons/hicolor/index.theme ]] ||
+    cp /usr/share/icons/hicolor/index.theme "$HOME/.local/share/icons/hicolor/" 2>/dev/null || true
+  chmod +x "$HOME/.local/bin/estilo-plasma" "$HOME/.local/bin/pantalla-login"
+fi
 quiere terminales && copiar "$H" .config/alacritty .config/foot .config/ghostty .config/kitty .config/xdg-terminals.list
 quiere herramientas && copiar "$H" .config/mise .claude
 quiere dictado && copiar "$H" .config/voxtype .config/systemd/user/voxtype.service
@@ -337,6 +350,11 @@ fi
 if quiere vmware; then
   sudo systemctl enable --now open-vm-tools.service 2>/dev/null || true
 fi
+if quiere plasma-macos; then
+  systemctl --user enable plasma-modo-auto.timer 2>/dev/null || aviso "No se pudo activar el cambio claro/oscuro automatico."
+  sudo env TEMA_ORIGEN="$HOME/.local/share/sddm-themes/WhiteSurParrot" "$HOME/.local/bin/pantalla-login" macos ||
+    aviso "No se pudo poner la pantalla de inicio estilo macOS."
+fi
 if quiere pantalla-inicio; then
   sudo systemctl enable sddm.service || aviso "No se pudo activar la pantalla de inicio (sddm)."
 fi
@@ -409,6 +427,7 @@ echo
 echo "  - Escritorio: Niri con DankMaterialShell."
 echo "  - Super + K muestra todos los atajos. Super + Tab, la vista general."
 echo "  - Modo futurista (animaciones y efectos):  futurista on  /  futurista off"
+quiere plasma-macos && echo "  - Plasma estilo macOS: entra en la sesion \"Plasma\" y ejecuta  estilo-plasma macos"
 quiere tienda && echo "  - Tienda de apps: Bazaar (los .flatpak se abren con doble clic)"
 echo "  - Para volver al escritorio de Parrot: elige otra sesion en la pantalla"
 echo "    de inicio, o en una terminal:  sesion parrot"

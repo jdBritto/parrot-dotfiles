@@ -97,6 +97,31 @@ de las animaciones salen de la plantilla
 `~/.config/matugen/templates/futurista-colores.kdl`, que DMS vuelve a generar en
 cada cambio de fondo.
 
+## KDE Plasma estilo macOS (Parrot)
+
+Opción del instalador (viene desmarcada). Le da a Plasma la forma de macOS y
+mantiene la identidad de Parrot:
+
+- **De macOS:** barra arriba con el menú de la app, dock flotante abajo,
+  botones cerrar/minimizar/maximizar a la izquierda, fuente Inter, efecto
+  "genio", buscador al centro con `Meta+Espacio` (como Spotlight) y Launchpad.
+- **De Parrot:** sus iconos (Flat-Remix-Green-Dark), el verde de Parrot en vez
+  del azul de Mac, el logo de Parrot donde Mac pone la manzana y el fondo Echo.
+- **Claro de día, oscuro de noche** (de 7:00 a 19:00), solo.
+- **Pantalla de inicio** estilo macOS (SDDM) con el fondo y el logo de Parrot.
+
+Se aplica desde dentro de la sesión **Plasma**; Niri no cambia:
+
+```bash
+estilo-plasma macos      # aplicar el estilo
+estilo-plasma claro      # modo claro (o: oscuro)
+estilo-plasma deshacer   # dejar Plasma como estaba
+pantalla-login lightdm   # volver a la pantalla de inicio de Parrot (pide contraseña)
+systemctl --user disable --now plasma-modo-auto.timer   # sin cambio automático
+```
+
+Temas basados en [WhiteSur](https://github.com/vinceliuice/WhiteSur-kde) (GPL-3.0).
+
 ## Guardar cambios de configuración
 
 ```bash
