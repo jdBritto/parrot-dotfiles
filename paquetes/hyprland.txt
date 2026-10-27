@@ -1,0 +1,42 @@
+# Hyprland Parrot (se instala desde echo-backports / trixie-backports:
+# la version de Hyprland del repositorio principal no se puede instalar)
+hyprland
+hyprland-guiutils
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+hyprlock
+hypridle
+hyprpaper
+hyprpicker
+hyprsunset
+hyprpolkitagent
+# Barra, menus, notificaciones y menu de apagado
+waybar
+fuzzel
+dunst
+wlogout
+libnotify-bin
+# Capturas, portapapeles, color
+grim
+slurp
+swappy
+wl-clipboard
+cliphist
+# Sonido, brillo, redes, bluetooth
+playerctl
+pavucontrol
+brightnessctl
+network-manager-gnome
+blueman
+power-profiles-daemon
+# Ajustes graficos (pantallas y apariencia GTK)
+nwg-look
+nwg-displays
+# Utilidades de los scripts
+jq
+socat
+imagemagick
+btop
+nautilus
+kitty
+fonts-jetbrains-mono

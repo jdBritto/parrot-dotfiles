@@ -1,6 +1,7 @@
 #!/bin/bash
 # Instala estilos de escritorio para Parrot OS 7: Niri moderno (con
-# DankMaterialShell), Windows (labwc) y macOS (KDE Plasma con identidad Parrot).
+# DankMaterialShell), Windows (labwc), Hyprland Parrot y macOS (KDE Plasma con
+# identidad Parrot).
 # (Tambien sirve en Debian 13 "trixie", que es la base de Parrot 7.)
 # Al empezar muestra un menu para elegir estilos y extras (flechas y Espacio),
 # y con cual de ellos arranca el equipo.
@@ -72,7 +73,7 @@ logo() {
   ██║ ╚████║██║██║  ██║██║       ██████╔╝██║ ╚═╝ ██║███████║
   ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝╚═╝       ╚═════╝ ╚═╝     ╚═╝╚══════╝
 LOGO
-  printf '\033[2m  Estilos de escritorio (Niri, Windows, macOS) para %s\033[0m\n\n' "${PRETTY_NAME:-Parrot OS 7}"
+  printf '\033[2m  Estilos de escritorio (Niri, Windows, Hyprland, macOS) para %s\033[0m\n\n' "${PRETTY_NAME:-Parrot OS 7}"
 }
 
 # ---------------------------------------------------------------- que instalar
@@ -85,6 +86,7 @@ agregar() { IDS+=("$1"); GRUPO[$1]=$2; NOMBRE[$1]=$3; DESC[$1]=$4; MARCA[$1]=$5;
 agregar niri estilo "Niri moderno" "Niri con DankMaterialShell: ventanas en columnas que se desplazan, barra y menus de DMS. Colores que siguen al fondo." si
 agregar futurista estilo "  ↳ Modo futurista (para Niri)" "Animaciones holograma, borde neon y cristal; los colores siguen al fondo. Se activa y desactiva con: futurista on / off" si
 agregar windows estilo "Windows (labwc)" "Ventanas flotantes con minimizar/maximizar/cerrar y atajos de Windows (Win+E, Alt+F4, Win+flechas), con la barra de DankMaterialShell." si
+agregar hyprland estilo "Hyprland Parrot" "Hyprland con 7 temas que se cambian al instante (Parrot, HackTheBox, Vaporwave...), barra, menus faciles (Super + A), columnas como Niri y modo rendimiento para equipos modestos." no
 command -v plasmashell >/dev/null &&
   agregar macos estilo "macOS (KDE Plasma)" "Barra arriba con el menu de la app, dock abajo, botones de Mac y Spotlight (Meta+Espacio), con los iconos, el verde, el logo y el fondo de Parrot. Claro de dia y oscuro de noche, y pantalla de inicio estilo macOS." no
 $TIENE_PANTALLA_INICIO || agregar pantalla-inicio extra "Pantalla de inicio (SDDM)" "Este equipo no tiene pantalla de inicio de sesion; instala SDDM." si
@@ -100,7 +102,7 @@ quiere() { [[ ${MARCA[$1]:-no} == si ]]; }
 cambiar() { if quiere "$1"; then MARCA[$1]=no; else MARCA[$1]=si; fi; }
 # Niri y Windows usan DankMaterialShell; macOS no lo necesita.
 usa_dms() { quiere niri || quiere windows; }
-estilos_elegidos() { local id; for id in niri windows macos; do quiere "$id" && echo "$id"; done; return 0; }
+estilos_elegidos() { local id; for id in niri windows hyprland macos; do quiere "$id" && echo "$id"; done; return 0; }
 declare -A TITULO_GRUPO=([estilo]="ESTILO DEL ESCRITORIO  (puedes elegir varios)" [extra]="EXTRAS")
 
 leer_tecla() {  # deja en TECLA la tecla pulsada; las flechas llegan como Esc + [A / [B
@@ -157,7 +159,7 @@ menu() {
 }
 
 # Con que estilo arranca el equipo (solo se pregunta si hay mas de uno).
-declare -A NOMBRE_ARRANQUE=([niri]="Niri moderno" [windows]="Windows (labwc)" [macos]="macOS (KDE Plasma)")
+declare -A NOMBRE_ARRANQUE=([niri]="Niri moderno" [windows]="Windows (labwc)" [hyprland]="Hyprland Parrot" [macos]="macOS (KDE Plasma)")
 elegir_arranque() {
   local opciones actual=0 i
   mapfile -t opciones < <(estilos_elegidos)
@@ -266,6 +268,7 @@ leer_lista() { grep -vE '^\s*(#|$)' "$REPO/paquetes/$1.txt"; }
 PAQUETES=()
 usa_dms && mapfile -t -O 0 PAQUETES < <(leer_lista dms)
 for id in "${IDS[@]}"; do
+  [[ $id == hyprland ]] && continue   # va aparte, desde backports
   if quiere "$id" && [[ -f $REPO/paquetes/$id.txt ]]; then
     mapfile -t -O "${#PAQUETES[@]}" PAQUETES < <(leer_lista "$id")
   fi
@@ -273,6 +276,20 @@ done
 if ((${#PAQUETES[@]})); then
   echo "Instalando: ${PAQUETES[*]}"
   apt_ install -y "${PAQUETES[@]}" || error "No se pudieron instalar algunos paquetes."
+fi
+
+# Hyprland del repositorio principal de Parrot no se puede instalar (pide
+# bibliotecas mas nuevas); la de backports si. Los espejos de Parrot a veces
+# fallan al descargar, por eso se reintenta.
+if quiere hyprland; then
+  verde "Instalando Hyprland desde $BACKPORTS"
+  mapfile -t HYPR_PAQ < <(leer_lista hyprland)
+  ok=false
+  for intento in 1 2 3 4; do
+    apt_ install -y -t "$BACKPORTS" "${HYPR_PAQ[@]}" && { ok=true; break; }
+    echo "Reintentando la descarga ($intento)..."; sleep 3
+  done
+  $ok || error "No se pudo instalar Hyprland desde $BACKPORTS."
 fi
 
 if quiere dictado && ! command -v voxtype >/dev/null; then
@@ -352,6 +369,15 @@ if quiere niri; then
   chmod +x "$HOME/.local/bin/futurista"
 fi
 quiere windows && copiar "$H" .config/labwc
+if quiere hyprland; then
+  copiar "$H" .config/hypr/hyprland.lua .config/hypr/parrot .config/hypr/temas .config/hypr/plantillas \
+    .config/hypr/scripts .config/hypr/waybar .config/hypr/iconos .config/hypr/hyprlock.conf \
+    .config/hypr/hypridle.conf .config/systemd/user/hyprpolkitagent.service.d
+  # personal.lua es tuyo: solo se copia la primera vez
+  [[ -f $HOME/.config/hypr/personal.lua ]] || cp "$H/.config/hypr/personal.lua" "$HOME/.config/hypr/"
+  chmod +x "$HOME"/.config/hypr/scripts/*.sh
+  "$HOME/.config/hypr/scripts/tema.sh" generar >/dev/null || aviso "No se pudieron crear los colores del tema de Hyprland."
+fi
 if quiere macos; then
   copiar "$H" .local/bin/estilo-plasma .local/bin/pantalla-login .local/share/plasma .local/share/aurorae \
     .local/share/color-schemes/WhiteSurParrot.colors .local/share/color-schemes/WhiteSurParrotDark.colors \
@@ -526,7 +552,7 @@ fi
 
 # ---------------------------------------------------------------- sesion de inicio
 # Archivo .desktop de la sesion de cada estilo (macOS es la sesion de Plasma).
-declare -A SESION_DE=([niri]=niri [windows]=labwc [macos]=plasma)
+declare -A SESION_DE=([niri]=niri [windows]=labwc [hyprland]=hyprland [macos]=plasma)
 SESION=${SESION_DE[$ARRANQUE]}
 verde "Eligiendo ${NOMBRE_ARRANQUE[$ARRANQUE]} como escritorio de inicio"
 AUTO=""
@@ -561,12 +587,16 @@ if quiere niri; then
 fi
 usa_dms && echo "  - Aspecto Windows sobre DMS (barra abajo, tema azul):  undercover on  /  undercover off"
 quiere windows && echo "  - Windows (labwc): sesion \"labwc\" en la pantalla de inicio, o:  sesion windows"
+if quiere hyprland; then
+  echo "  - Hyprland Parrot: sesion \"Hyprland\" en la pantalla de inicio, o:  sesion hyprland"
+  echo "    Super + A ajustes rapidos · Super + K atajos · Super + Alt + T tema · Super + Alt + P modo rendimiento"
+fi
 if quiere macos; then
   echo "  - macOS (KDE Plasma): sesion \"Plasma\" en la pantalla de inicio, o:  sesion parrot"
   echo "    Modo claro/oscuro:  estilo-plasma claro  /  estilo-plasma oscuro"
 fi
 quiere tienda && echo "  - Tienda de apps: Bazaar (los .flatpak se abren con doble clic)"
-echo "  - Cambiar el escritorio de inicio:  sesion niri | windows | parrot"
+echo "  - Cambiar el escritorio de inicio:  sesion niri | windows | hyprland | parrot"
 echo
 echo "Para agregar un estilo o algo que no elegiste, vuelve a ejecutar ./install.sh"
 

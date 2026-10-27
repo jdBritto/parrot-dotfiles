@@ -7,6 +7,7 @@ Estilos de escritorio para **Parrot OS 7** (también funciona en Debian 13
 |---|---|
 | **Niri moderno** | Niri + [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell): ventanas en columnas. Es el mismo escritorio que uso en Omarchy ([omarchy-dotfiles](https://github.com/jdBritto/omarchy-dotfiles)), con los mismos atajos. Opcional: modo futurista. |
 | **Windows** | labwc con la barra de DankMaterialShell: ventanas flotantes y atajos de Windows. |
+| **Hyprland Parrot** | Hyprland con 7 temas que se cambian al instante, barra, menús fáciles (`Super + A`), columnas como Niri y modo rendimiento. Inspirado en los [dotfiles de gh0stzk](https://github.com/gh0stzk/dotfiles). |
 | **macOS** | KDE Plasma con la forma de macOS y la identidad de Parrot (iconos, verde, logo y fondo). |
 
 Cada estilo es una sesión de la pantalla de inicio; el instalador pregunta con
@@ -65,6 +66,7 @@ solo (inicio automático), usa en una terminal:
 ```bash
 sesion niri       # arrancar con Niri
 sesion windows    # arrancar con el escritorio estilo Windows (labwc)
+sesion hyprland   # arrancar con Hyprland Parrot
 sesion parrot     # Plasma: el escritorio de Parrot o el estilo macOS (también: sesion macos)
 sesion estado     # ver cuál está elegido
 ```
@@ -139,6 +141,54 @@ En la pantalla de inicio elige la sesión **labwc**, o en una terminal:
 La configuración está en `~/.config/labwc/` (`rc.xml` atajos y ventanas,
 `menu.xml` menú del clic derecho). Aplica tus cambios con `labwc -r`. Las barras de
 título toman los colores del fondo, igual que el resto del escritorio.
+
+## Hyprland Parrot
+
+Hyprland 0.55 (desde `echo-backports`: la versión del repositorio principal de
+Parrot no se puede instalar) con la identidad de Parrot. Las ideas vienen de los
+[dotfiles de gh0stzk](https://github.com/gh0stzk/dotfiles): temas con paletas
+hechas a mano que se cambian al instante, menús para todo y efectos que se
+pueden apagar.
+
+- **7 temas**: Parrot (verde, por defecto), Lorikeet, Vaporwave, HackTheBox,
+  Nefelibata, Mystic y Claro. Cada uno cambia al momento los bordes, la barra,
+  el lanzador, las notificaciones, la terminal, la pantalla de bloqueo, el menú
+  de apagado y el fondo. Cada tema recuerda el fondo que le elijas.
+- **Centro Parrot** (`Super + A`): tema, fondo, modo de rendimiento, luz
+  nocturna, no molestar, wifi, bluetooth, sonido, pantallas, capturas…
+- **Modo de rendimiento** (`Super + Alt + P` o el icono de la barra):
+  *equilibrado* (todos los efectos), *rendimiento* (sin desenfoque ni sombras,
+  CPU en `performance`) y *ahorro* (sin efectos ni animaciones, `power-saver`).
+- **Tres formas de ordenar las ventanas** (`Super + D`): mosaico, columnas
+  (como Niri) y principal con pila. Además: minimizar (`Super + M`), pestañas
+  (`Super + G`), terminal desplegable (`Super + |`), arrastrar con `Super` +
+  ratón, cambiar el tamaño desde el borde y gestos del touchpad (3 dedos).
+- **Barra** en dos estilos: *islas* (bloques flotantes) y *panel*
+  (`Super + Alt + B`); `Super + B` la oculta.
+
+| Atajo | Qué hace |
+|---|---|
+| `Super + K` | Ver todos los atajos |
+| `Super + A` | Centro Parrot (ajustes rápidos) |
+| `Super + Espacio` | Buscar aplicaciones |
+| `Super + Enter` | Terminal |
+| `Super + Tab` / `Alt + Tab` | Lista de ventanas / siguiente ventana |
+| `Super + W` | Cerrar ventana |
+| `Super + T` / `Super + F` | Flotante / pantalla completa |
+| `Super + Alt + T` | Cambiar tema |
+| `Super + Ctrl + Espacio` | Cambiar fondo |
+| `Super + V` | Portapapeles |
+| `Impr Pant` / `Super + Shift + S` | Captura de una zona / y editarla |
+| `Super + Ctrl + L` | Bloquear |
+| `Super + Escape` | Apagar / reiniciar |
+
+La configuración está en `~/.config/hypr/` (en Lua, el formato nuevo de
+Hyprland): `parrot/` las partes, `temas/` los colores (puedes copiar uno y
+crear el tuyo), `scripts/` los menús. Tus cambios van en
+`~/.config/hypr/personal.lua`, que el instalador nunca sobrescribe.
+
+La misma configuración, con su propio instalador para CachyOS, está en
+[cachyos-dotfiles](https://github.com/jdBritto/cachyos-dotfiles).
 
 ## KDE Plasma estilo macOS (Parrot)
 
@@ -233,5 +283,5 @@ tiene en tu carpeta personal.)
 | `install.sh` | Instalador |
 | `actualizar.sh` | Sube tu configuración actual al repositorio |
 | `paquetes/` | Listas de paquetes por componente |
-| `home/` | Configuración (Niri, DMS, terminales, mise, voxtype, modo futurista) escritorio labwc y los comandos `sesion`, `futurista` y `undercover` |
+| `home/` | Configuración (Niri, DMS, Hyprland Parrot, terminales, mise, voxtype, modo futurista) escritorio labwc y los comandos `sesion`, `futurista` y `undercover` |
 | `vmware/` | Ajustes que solo se usan en VMware |

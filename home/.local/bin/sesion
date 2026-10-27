@@ -3,9 +3,10 @@
 #
 #   sesion niri       -> Niri con DankMaterialShell (ventanas en columnas)
 #   sesion windows    -> labwc con DankMaterialShell (ventanas como en Windows)
+#   sesion hyprland   -> Hyprland Parrot (temas, menus y modo rendimiento)
 #   sesion parrot     -> el escritorio que traia Parrot (KDE Plasma, MATE...)
 #   sesion macos      -> lo mismo: KDE Plasma, donde va el estilo macOS
-#   sesion alternar   -> pasar al siguiente (niri -> windows -> parrot)
+#   sesion alternar   -> pasar al siguiente (niri -> windows -> hyprland -> parrot)
 #   sesion estado     -> mostrar cual esta elegido
 #
 # Solo hace falta si el equipo entra solo (inicio automatico). Si no, elige
@@ -31,7 +32,7 @@ escritorio_parrot() {
   done
   for d in "${SESIONES[@]}"; do
     for f in "$d"/*.desktop; do
-      [[ -e $f && $(basename "$f") != niri* && $(basename "$f") != labwc* ]] && { basename "$f"; return; }
+      [[ -e $f && $(basename "$f") != niri* && $(basename "$f") != labwc* && $(basename "$f") != hyprland* ]] && { basename "$f"; return; }
     done
   done
 }
@@ -39,6 +40,7 @@ escritorio_parrot() {
 actual() {
   if grep -qE "^$CLAVE=niri" "$CONF" 2>/dev/null; then echo niri
   elif grep -qE "^$CLAVE=labwc" "$CONF" 2>/dev/null; then echo windows
+  elif grep -qE "^$CLAVE=hyprland" "$CONF" 2>/dev/null; then echo hyprland
   else echo parrot; fi
 }
 
@@ -68,12 +70,17 @@ case "${1:-estado}" in
   windows)  [[ -f /usr/share/wayland-sessions/labwc.desktop ]] ||
               { echo "Falta labwc: vuelve a ejecutar install.sh y marca \"Escritorio estilo Windows\"."; exit 1; }
             cambiar windows labwc.desktop ;;
+  hyprland) [[ -f /usr/share/wayland-sessions/hyprland.desktop ]] ||
+              { echo "Falta Hyprland: vuelve a ejecutar install.sh y marca \"Hyprland Parrot\"."; exit 1; }
+            cambiar hyprland hyprland.desktop ;;
   parrot | macos) cambiar parrot "$(escritorio_parrot)" ;;
-  alternar) case $(actual) in
-              niri) [[ -f /usr/share/wayland-sessions/labwc.desktop ]] && exec "$0" windows || exec "$0" parrot ;;
-              windows) exec "$0" parrot ;;
-              *) exec "$0" niri ;;
+  alternar) hay() { [[ -f /usr/share/wayland-sessions/$1.desktop ]]; }
+            case $(actual) in
+              niri) if hay labwc; then exec "$0" windows; elif hay hyprland; then exec "$0" hyprland; else exec "$0" parrot; fi ;;
+              windows) if hay hyprland; then exec "$0" hyprland; else exec "$0" parrot; fi ;;
+              hyprland) exec "$0" parrot ;;
+              *) if hay niri; then exec "$0" niri; elif hay hyprland; then exec "$0" hyprland; else exec "$0" parrot; fi ;;
             esac ;;
   estado)   echo "Sesion elegida: $(actual)" ;;
-  *)        sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+  *)        sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac
