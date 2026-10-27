@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<!--
+  Escritorio "estilo Windows": labwc (ventanas flotantes clasicas) con
+  DankMaterialShell como barra, menu de inicio y notificaciones.
+  Los atajos imitan a Windows. Lista completa: man labwc-config y labwc-actions.
+  Aplicar cambios sin cerrar sesion: labwc -r
+-->
+<labwc_config>
+
+  <core>
+    <gap>4</gap>
+  </core>
+
+  <placement>
+    <policy>center</policy>
+  </placement>
+
+  <theme>
+    <!-- Botones a la derecha, como en Windows: minimizar, maximizar, cerrar -->
+    <titlebar>
+      <layout>icon:iconify,max,close</layout>
+      <showTitle>yes</showTitle>
+    </titlebar>
+    <cornerRadius>8</cornerRadius>
+    <dropShadows>yes</dropShadows>
+    <font><name>Noto Sans</name><size>10</size></font>
+  </theme>
+
+  <windowSwitcher show="yes" preview="yes" outlines="yes" allWorkspaces="no">
+    <fields>
+      <field content="desktop_entry_name" width="30%" />
+      <field content="title" width="70%" />
+    </fields>
+  </windowSwitcher>
+
+  <!-- Arrastrar una ventana al borde la acopla (como Aero Snap) -->
+  <snapping>
+    <range>10</range>
+    <overlay enabled="yes"><delay inner="300" outer="300" /></overlay>
+    <topMaximize>yes</topMaximize>
+  </snapping>
+
+  <!-- 4 escritorios virtuales (Ctrl + Win + flechas, como en Windows) -->
+  <desktops number="4" popupTime="600" prefix="Escritorio" />
+
+  <keyboard>
+    <numlock>on</numlock>
+    <default />
+
+    <!-- Tecla Windows sola: menu de inicio (buscar aplicaciones) -->
+    <keybind key="Super_L" onRelease="yes">
+      <action name="Execute" command="dms ipc call spotlight toggle" />
+    </keybind>
+    <keybind key="W-s"><action name="Execute" command="dms ipc call spotlight toggle" /></keybind>
+    <keybind key="W-r"><action name="Execute" command="dms ipc call spotlight toggle" /></keybind>
+
+    <!-- Aplicaciones -->
+    <keybind key="W-e"><action name="Execute" command="nautilus --new-window" /></keybind>
+    <keybind key="W-Return"><action name="Execute" command="xdg-terminal-exec" /></keybind>
+    <keybind key="C-A-t"><action name="Execute" command="xdg-terminal-exec" /></keybind>
+    <keybind key="W-S-b"><action name="Execute" command="x-www-browser" /></keybind>
+
+    <!-- Ventanas -->
+    <keybind key="A-F4"><action name="Close" /></keybind>
+    <keybind key="W-w"><action name="Close" /></keybind>
+    <keybind key="W-Up"><action name="Maximize" /></keybind>
+    <keybind key="W-Down"><action name="Iconify" /></keybind>
+    <keybind key="W-Left"><action name="SnapToEdge" direction="left" /></keybind>
+    <keybind key="W-Right"><action name="SnapToEdge" direction="right" /></keybind>
+    <keybind key="W-S-Left"><action name="MoveToOutput" direction="left" /></keybind>
+    <keybind key="W-S-Right"><action name="MoveToOutput" direction="right" /></keybind>
+    <keybind key="F11"><action name="ToggleFullscreen" /></keybind>
+    <keybind key="W-Tab">
+      <action name="ShowMenu" menu="client-list-combined-menu" />
+    </keybind>
+
+    <!-- Escritorios virtuales -->
+    <keybind key="C-W-Left"><action name="GoToDesktop" to="left" wrap="yes" /></keybind>
+    <keybind key="C-W-Right"><action name="GoToDesktop" to="right" wrap="yes" /></keybind>
+    <keybind key="W-1"><action name="GoToDesktop" to="1" /></keybind>
+    <keybind key="W-2"><action name="GoToDesktop" to="2" /></keybind>
+    <keybind key="W-3"><action name="GoToDesktop" to="3" /></keybind>
+    <keybind key="W-4"><action name="GoToDesktop" to="4" /></keybind>
+    <keybind key="W-S-1"><action name="SendToDesktop" to="1" /></keybind>
+    <keybind key="W-S-2"><action name="SendToDesktop" to="2" /></keybind>
+    <keybind key="W-S-3"><action name="SendToDesktop" to="3" /></keybind>
+    <keybind key="W-S-4"><action name="SendToDesktop" to="4" /></keybind>
+
+    <!-- Escritorio (DMS) -->
+    <keybind key="W-l"><action name="Execute" command="dms ipc call lock lock" /></keybind>
+    <keybind key="W-i"><action name="Execute" command="dms ipc call settings focusOrToggle" /></keybind>
+    <keybind key="W-a"><action name="Execute" command="dms ipc call control-center toggle" /></keybind>
+    <keybind key="W-n"><action name="Execute" command="dms ipc call notifications toggle" /></keybind>
+    <keybind key="W-v"><action name="Execute" command="dms ipc call clipboard toggle" /></keybind>
+    <keybind key="W-x"><action name="Execute" command="dms ipc call powermenu toggle" /></keybind>
+    <keybind key="W-Escape"><action name="Execute" command="dms ipc call powermenu toggle" /></keybind>
+    <keybind key="C-S-Escape"><action name="Execute" command="dms ipc call processlist focusOrToggle" /></keybind>
+    <keybind key="C-A-Delete"><action name="Execute" command="dms ipc call powermenu toggle" /></keybind>
+    <keybind key="C-W-space"><action name="Execute" command="dms ipc call dankdash wallpaper" /></keybind>
+    <keybind key="C-W-x"><action name="Execute" command="voxtype record toggle" /></keybind>
+
+    <!-- Capturas de pantalla: Win + Shift + S como en Windows -->
+    <keybind key="W-S-s"><action name="Execute" command="dms screenshot" /></keybind>
+    <keybind key="Print"><action name="Execute" command="dms screenshot" /></keybind>
+    <keybind key="C-Print"><action name="Execute" command="dms screenshot full" /></keybind>
+    <keybind key="A-Print"><action name="Execute" command="dms screenshot window" /></keybind>
+
+    <!-- Volumen, brillo y musica -->
+    <keybind key="XF86_AudioRaiseVolume"><action name="Execute" command="dms ipc call audio increment 3" /></keybind>
+    <keybind key="XF86_AudioLowerVolume"><action name="Execute" command="dms ipc call audio decrement 3" /></keybind>
+    <keybind key="XF86_AudioMute"><action name="Execute" command="dms ipc call audio mute" /></keybind>
+    <keybind key="XF86_AudioMicMute"><action name="Execute" command="dms ipc call audio micmute" /></keybind>
+    <keybind key="XF86_AudioPlay"><action name="Execute" command="dms ipc call mpris playPause" /></keybind>
+    <keybind key="XF86_AudioPause"><action name="Execute" command="dms ipc call mpris playPause" /></keybind>
+    <keybind key="XF86_AudioNext"><action name="Execute" command="dms ipc call mpris next" /></keybind>
+    <keybind key="XF86_AudioPrev"><action name="Execute" command="dms ipc call mpris previous" /></keybind>
+    <keybind key="XF86_MonBrightnessUp"><action name="Execute" command="dms ipc call brightness increment 5 ''" /></keybind>
+    <keybind key="XF86_MonBrightnessDown"><action name="Execute" command="dms ipc call brightness decrement 5 ''" /></keybind>
+    <keybind key="XF86_PowerOff"><action name="Execute" command="dms ipc call powermenu toggle" /></keybind>
+  </keyboard>
+
+  <mouse>
+    <default />
+    <!-- Clic derecho en el escritorio: menu en espanol (menu.xml) -->
+    <context name="Root">
+      <mousebind button="Right" action="Press">
+        <action name="ShowMenu" menu="root-menu" />
+      </mousebind>
+      <mousebind button="Middle" action="Press">
+        <action name="ShowMenu" menu="client-list-combined-menu" />
+      </mousebind>
+    </context>
+  </mouse>
+
+  <libinput>
+    <device category="touchpad">
+      <naturalScroll>yes</naturalScroll>
+      <tap>yes</tap>
+    </device>
+  </libinput>
+
+</labwc_config>

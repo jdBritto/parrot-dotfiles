@@ -1,0 +1,7 @@
+# Escritorio estilo Windows: labwc (ventanas flotantes clasicas, barra de
+# titulo con minimizar/maximizar/cerrar) con DankMaterialShell como barra.
+labwc
+# Compartir pantalla y capturas en labwc (videollamadas, OBS)
+xdg-desktop-portal-wlr
+# Apps antiguas (X11) dentro de labwc
+xwayland

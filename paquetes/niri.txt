@@ -1,14 +1,5 @@
-# Niri (del repositorio DankLinux) y lo que necesita para funcionar bien
+# Estilo Niri moderno (del repositorio DankLinux). Lo comun con el estilo
+# Windows (portales, archivos, fuentes...) esta en dms.txt.
 niri
 xwayland-satellite
 xdg-desktop-portal-gnome
-xdg-desktop-portal-gtk
-xdg-terminal-exec
-gnome-keyring
-brightnessctl
-xdg-user-dirs
-nautilus
-fonts-noto-core
-fonts-noto-color-emoji
-# Para el comando futurista
-python3

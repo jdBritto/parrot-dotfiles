@@ -1,0 +1,10 @@
+# Variables del escritorio estilo Windows (labwc). Se aplican al iniciar sesion.
+XKB_DEFAULT_LAYOUT=latam
+XDG_CURRENT_DESKTOP=labwc:wlroots
+QT_QPA_PLATFORM=wayland;xcb
+QT_QPA_PLATFORMTHEME=gtk3
+QT_QPA_PLATFORMTHEME_QT6=gtk3
+ELECTRON_OZONE_PLATFORM_HINT=auto
+MOZ_ENABLE_WAYLAND=1
+TERMINAL=xdg-terminal-exec
+PATH=~/.local/bin:~/.local/share/mise/shims:/usr/local/bin:/usr/bin:/usr/sbin

@@ -46,5 +46,11 @@ binds {
     Mod+Ctrl+X hotkey-overlay-title="Dictado por voz" { spawn "voxtype" "record" "toggle"; }
     XF86PowerOff allow-when-locked=true { spawn "dms" "ipc" "call" "powermenu" "toggle"; }
 
+    // Atajos de Windows (para quien viene de Windows; no reemplazan a los de Niri)
+    Alt+F4 hotkey-overlay-title="Cerrar ventana (como Windows)" { close-window; }
+    Mod+E hotkey-overlay-title="Explorador de archivos" { spawn "nautilus" "--new-window"; }
+    Mod+Shift+S hotkey-overlay-title="Captura de una zona" { spawn "dms" "screenshot"; }
+    Mod+Ctrl+Shift+U hotkey-overlay-title="Modo Windows (undercover)" { spawn "undercover" "alternar"; }
+
     // Espacios de trabajo: Mod+Tab = vista general (como en DMS)
 }

@@ -1,0 +1,134 @@
+#!/bin/bash
+# Modo undercover: el escritorio se ve como Windows (idea de Kali Undercover,
+# pero para DankMaterialShell en Wayland: funciona en Niri y en labwc).
+#
+#   undercover on        -> barra de tareas abajo con boton de inicio, apps
+#                           abiertas y reloj a la derecha; tema azul y fondo
+#                           azul; sin dock ni efectos del modo futurista
+#   undercover off       -> vuelve exactamente a como estaba antes
+#   undercover alternar  -> cambia entre los dos
+#   undercover estado    -> muestra si esta activo
+#
+# Antes de cambiar nada guarda tu configuracion en
+# ~/.local/state/parrot-dotfiles/undercover/ y "off" la restaura.
+
+set -euo pipefail
+
+AJUSTES=$HOME/.config/DankMaterialShell/settings.json
+SESION=$HOME/.local/state/DankMaterialShell/session.json
+GUARDADO=$HOME/.local/state/parrot-dotfiles/undercover
+FONDO=$HOME/.local/share/parrot-dotfiles/undercover-fondo.png
+NIRI_FUTURISTA=$HOME/.config/niri/futurista.kdl
+
+activo() { [[ -d $GUARDADO ]]; }
+
+# DMS guarda sus ajustes al cerrarse: hay que pararlo antes de tocar sus
+# archivos y volver a abrirlo despues.
+DMS_ESTABA=false
+parar_dms() {
+  if pgrep -x dms >/dev/null || pgrep -f 'qs -p .*dms-shell' >/dev/null; then
+    DMS_ESTABA=true
+    dms kill >/dev/null 2>&1 || true
+    sleep 0.5
+  fi
+}
+abrir_dms() {
+  $DMS_ESTABA || return 0
+  [[ -n ${WAYLAND_DISPLAY:-} ]] || { echo "Abre DMS con: dms run"; return 0; }
+  setsid -f dms run >/dev/null 2>&1 </dev/null
+}
+
+# Fondo azul con luces suaves (dibujado aqui, sin logos de nadie).
+crear_fondo() {
+  [[ -f $FONDO ]] && return 0
+  mkdir -p "$(dirname "$FONDO")"
+  python3 -I - "$FONDO" <<'PY' 2>/dev/null || return 1
+import sys
+from PIL import Image, ImageDraw, ImageFilter
+w, h = 2560, 1440
+# Degradado vertical: se dibuja una columna y se estira a todo el ancho.
+col = Image.new("RGB", (1, h))
+for y in range(h):
+    t = y / h
+    col.putpixel((0, y), (int(4 + 6 * t), int(22 + 40 * t), int(66 + 90 * t)))
+img = col.resize((w, h))
+luz = Image.new("L", (w, h), 0)
+d = ImageDraw.Draw(luz)
+d.ellipse((int(w * .35), int(h * .30), int(w * .95), int(h * 1.25)), fill=170)
+d.ellipse((int(w * .55), int(h * .45), int(w * .85), int(h * .95)), fill=255)
+luz = luz.filter(ImageFilter.GaussianBlur(220))
+img = Image.composite(Image.new("RGB", (w, h), (90, 170, 255)), img, luz)
+img.save(sys.argv[1])
+PY
+}
+
+python_json() { python3 -I - "$@"; }
+
+on() {
+  if activo; then echo "El modo undercover ya estaba activo."; return; fi
+  parar_dms
+  mkdir -p "$GUARDADO"
+  [[ -f $AJUSTES ]] && cp -a "$AJUSTES" "$GUARDADO/settings.json"
+  [[ -f $SESION ]] && cp -a "$SESION" "$GUARDADO/session.json"
+  if [[ -f $NIRI_FUTURISTA ]]; then
+    mv "$NIRI_FUTURISTA" "$NIRI_FUTURISTA.off"
+    touch "$GUARDADO/futurista"
+  fi
+
+  local fondo='#0a3d8f'
+  crear_fondo && fondo=$FONDO
+
+  mkdir -p "$(dirname "$AJUSTES")" "$(dirname "$SESION")"
+  python_json "$AJUSTES" "$SESION" "$fondo" <<'PY'
+import json, os, sys
+ajustes, sesion, fondo = sys.argv[1:4]
+leer = lambda r: json.load(open(r)) if os.path.exists(r) else {}
+
+d = leer(ajustes)
+barras = d.get("barConfigs") or [{"id": "default", "name": "Main Bar", "enabled": True,
+                                   "screenPreferences": ["all"], "showOnLastDisplay": True}]
+b = barras[0]
+b.update(position=1,  # abajo
+         leftWidgets=["launcherButton", "runningApps"],
+         centerWidgets=[],
+         rightWidgets=["systemTray", "notificationButton", "battery",
+                       "controlCenterButton", "clock"],
+         attachToScreenEdge=True, squareCorners=True, spacing=2,
+         transparency=0.95, widgetTransparency=1, autoHide=False, visible=True)
+d["barConfigs"] = barras
+for dock in d.get("dockConfigs") or []:
+    dock["enabled"] = False
+d.update(showDock=False, currentThemeName="blue", blurEnabled=False,
+         blurWallpaperOnOverview=False, popupTransparency=1,
+         floatingWindowTransparency=1, foregroundLayerTransparency=1,
+         use24HourClock=False, showSeconds=False)
+json.dump(d, open(ajustes, "w"), indent=2)
+
+s = leer(sesion)
+s.update(wallpaperPath=fondo, wallpaperCyclingEnabled=False, wallpaperTransition="fade")
+json.dump(s, open(sesion, "w"), indent=2)
+PY
+  abrir_dms
+  echo "Modo undercover activado. Para volver: undercover off"
+}
+
+off() {
+  if ! activo; then echo "El modo undercover no estaba activo."; return; fi
+  parar_dms
+  [[ -f $GUARDADO/settings.json ]] && cp -a "$GUARDADO/settings.json" "$AJUSTES"
+  [[ -f $GUARDADO/session.json ]] && cp -a "$GUARDADO/session.json" "$SESION"
+  if [[ -f $GUARDADO/futurista && -f $NIRI_FUTURISTA.off ]]; then
+    mv "$NIRI_FUTURISTA.off" "$NIRI_FUTURISTA"
+  fi
+  rm -rf "$GUARDADO"
+  abrir_dms
+  echo "Modo undercover desactivado: el escritorio vuelve a como estaba."
+}
+
+case "${1:-estado}" in
+  on) on ;;
+  off) off ;;
+  alternar) if activo; then off; else on; fi ;;
+  estado) if activo; then echo "Modo undercover: activo"; else echo "Modo undercover: desactivado"; fi ;;
+  *) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

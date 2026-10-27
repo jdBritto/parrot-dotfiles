@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Menu del clic derecho en el escritorio. Aplicar cambios: labwc -r -->
+<openbox_menu>
+  <menu id="root-menu" label="">
+    <item label="Terminal"><action name="Execute" command="xdg-terminal-exec" /></item>
+    <item label="Explorador de archivos"><action name="Execute" command="nautilus --new-window" /></item>
+    <item label="Navegador"><action name="Execute" command="x-www-browser" /></item>
+    <separator />
+    <item label="Cambiar fondo de pantalla"><action name="Execute" command="dms ipc call dankdash wallpaper" /></item>
+    <item label="Configuracion"><action name="Execute" command="dms ipc call settings focusOrToggle" /></item>
+    <item label="Modo Windows (undercover)"><action name="Execute" command="undercover alternar" /></item>
+    <separator />
+    <item label="Recargar configuracion"><action name="Reconfigure" /></item>
+    <item label="Apagar / reiniciar"><action name="Execute" command="dms ipc call powermenu toggle" /></item>
+  </menu>
+</openbox_menu>

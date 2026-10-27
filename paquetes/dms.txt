@@ -1,5 +1,6 @@
-# DankMaterialShell (siempre se instala). quickshell viene de echo-backports
-# y dms del repositorio DankLinux; el instalador agrega los dos.
+# DankMaterialShell: la barra y menus de los estilos Niri y Windows (macOS no
+# lo usa). quickshell viene de echo-backports y dms del repositorio DankLinux;
+# el instalador agrega los dos.
 dms
 # Sin qt6-wayland, quickshell no abre en Wayland y el escritorio queda vacio
 qt6-wayland
@@ -8,3 +9,15 @@ cliphist
 wl-clipboard
 accountsservice
 qt6ct
+# Lo que necesita un escritorio Wayland para funcionar bien (Niri y labwc)
+xdg-desktop-portal-gtk
+xdg-terminal-exec
+gnome-keyring
+brightnessctl
+xdg-user-dirs
+nautilus
+fonts-noto-core
+fonts-noto-color-emoji
+# Para los comandos futurista y undercover (este dibuja su fondo azul)
+python3
+python3-pil

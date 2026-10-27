@@ -1,0 +1,27 @@
+# ! Lo genera DMS (matugen) cada vez que cambia el fondo. No editar aqui:
+# ! edita ~/.config/matugen/templates/labwc-colores
+# Colores de las ventanas del escritorio estilo Windows (labwc).
+border.width: 1
+window.active.border.color: {{colors.primary.default.hex}}
+window.inactive.border.color: {{colors.outline_variant.default.hex}}
+window.active.title.bg.color: {{colors.surface_container_high.default.hex}}
+window.inactive.title.bg.color: {{colors.surface_container.default.hex}}
+window.active.label.text.color: {{colors.on_surface.default.hex}}
+window.inactive.label.text.color: {{colors.on_surface_variant.default.hex}}
+window.active.button.unpressed.image.color: {{colors.on_surface.default.hex}}
+window.inactive.button.unpressed.image.color: {{colors.on_surface_variant.default.hex}}
+window.button.width: 36
+window.button.height: 26
+menu.border.color: {{colors.outline_variant.default.hex}}
+menu.items.bg.color: {{colors.surface_container.default.hex}}
+menu.items.text.color: {{colors.on_surface.default.hex}}
+menu.items.active.bg.color: {{colors.primary.default.hex}}
+menu.items.active.text.color: {{colors.on_primary.default.hex}}
+menu.separator.color: {{colors.outline_variant.default.hex}}
+menu.items.padding.x: 12
+menu.items.padding.y: 6
+osd.bg.color: {{colors.surface_container.default.hex}}
+osd.border.color: {{colors.primary.default.hex}}
+osd.label.text.color: {{colors.on_surface.default.hex}}
+snapping.overlay.region.bg.color: {{colors.primary.default.hex}}40
+snapping.overlay.edge.bg.color: {{colors.primary.default.hex}}40

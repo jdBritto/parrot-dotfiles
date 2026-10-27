@@ -1,9 +1,16 @@
 # parrot-dotfiles
 
-Mi escritorio **Niri + [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell)**
-para **Parrot OS 7** (también funciona en Debian 13 "trixie", que es su base).
-Es el mismo escritorio que uso en Omarchy ([omarchy-dotfiles](https://github.com/jdBritto/omarchy-dotfiles)),
-con los mismos atajos, adaptado a Parrot.
+Estilos de escritorio para **Parrot OS 7** (también funciona en Debian 13
+"trixie", que es su base). Eliges uno o varios al instalar:
+
+| Estilo | Qué es |
+|---|---|
+| **Niri moderno** | Niri + [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell): ventanas en columnas. Es el mismo escritorio que uso en Omarchy ([omarchy-dotfiles](https://github.com/jdBritto/omarchy-dotfiles)), con los mismos atajos. Opcional: modo futurista. |
+| **Windows** | labwc con la barra de DankMaterialShell: ventanas flotantes y atajos de Windows. |
+| **macOS** | KDE Plasma con la forma de macOS y la identidad de Parrot (iconos, verde, logo y fondo). |
+
+Cada estilo es una sesión de la pantalla de inicio; el instalador pregunta con
+cuál arranca el equipo.
 
 El escritorio original de Parrot (KDE Plasma, MATE, etc.) **no se toca**: sigue
 disponible en la pantalla de inicio.
@@ -19,23 +26,28 @@ git clone https://github.com/jdBritto/parrot-dotfiles.git ~/parrot-dotfiles
 ~/parrot-dotfiles/install.sh
 ```
 
-   Al empezar muestra un menú para elegir qué instalar: te mueves con las
-   flechas (o `j`/`k`), marcas o desmarcas con **Espacio** (o con el número de
-   la opción), `a` marca todo, `n` nada, **Enter** continúa y `q` sale sin
-   cambiar nada. Para instalar lo recomendado sin preguntas: `install.sh --si`.
+   Al empezar muestra un menú en dos partes: **estilos del escritorio** (puedes
+   marcar varios) y **extras**. Te mueves con las flechas (o `j`/`k`), marcas o
+   desmarcas con **Espacio** (o con el número de la opción), `a` marca todo,
+   `n` nada, **Enter** continúa y `q` sale sin cambiar nada. Si marcaste más de
+   un estilo, después eliges **con cuál arranca el equipo**.
+   Sin preguntas (Niri moderno, futurista y Windows, arranca en Niri):
+   `install.sh --si`.
 
-3. Reinicia y, en la pantalla de inicio, elige la sesión **Niri**.
+3. Reinicia. Para cambiar de estilo, elige otra sesión en la pantalla de inicio
+   (**Niri**, **labwc** o **Plasma**) o usa el comando `sesion`.
 
 ### Qué hace el instalador
 
-- Agrega los repositorios oficiales de DankLinux (Niri, Ghostty, matugen…) y de
-  DMS, e instala `quickshell` desde `echo-backports` de Parrot, como indica la
+- Con Niri o Windows: agrega los repositorios oficiales de DankLinux (Niri,
+  Ghostty, matugen…) y de DMS, e instala `quickshell` desde `echo-backports` de Parrot, como indica la
   [guía de instalación de DMS](https://danklinux.com/docs/dankmaterialshell/installation).
 - Instala `qt6-wayland` (sin él DMS no abre y el escritorio queda vacío) y
   agrega tu usuario al grupo `input`.
 - Hace que DMS arranque **solo** con Niri (el paquete de Debian lo activaría
   también en KDE y chocaría con su panel).
-- Copia la configuración de Niri, DMS y las terminales.
+- Copia la configuración de cada estilo elegido. Si eliges solo macOS, no
+  instala Niri ni DankMaterialShell.
 - Opcional: terminales con la fuente JetBrainsMono Nerd, Firefox, tienda de apps
   [Bazaar](https://github.com/kolunmi/bazaar) con Flatpak y Flathub (abre los
   `.flatpak` con doble clic; viene desmarcada), herramientas
@@ -52,7 +64,8 @@ solo (inicio automático), usa en una terminal:
 
 ```bash
 sesion niri       # arrancar con Niri
-sesion parrot     # volver al escritorio de Parrot
+sesion windows    # arrancar con el escritorio estilo Windows (labwc)
+sesion parrot     # Plasma: el escritorio de Parrot o el estilo macOS (también: sesion macos)
 sesion estado     # ver cuál está elegido
 ```
 
@@ -97,9 +110,39 @@ de las animaciones salen de la plantilla
 `~/.config/matugen/templates/futurista-colores.kdl`, que DMS vuelve a generar en
 cada cambio de fondo.
 
+## Escritorio estilo Windows (labwc)
+
+Opcional en el instalador (viene marcado). Es otro escritorio, con la misma barra
+y menús de DMS, pero con las **ventanas de siempre**: flotantes, con
+minimizar / maximizar / cerrar a la derecha y que se acoplan al arrastrarlas a
+un borde. Ideal para empezar si vienes de Windows; cuando quieras más libertad,
+pasa a Niri.
+
+En la pantalla de inicio elige la sesión **labwc**, o en una terminal:
+`sesion windows` (y `sesion niri` para volver).
+
+| Atajo | Qué hace |
+|---|---|
+| `Win` (sola) / `Win + S` | Menú de inicio (buscar aplicaciones) |
+| `Win + E` | Explorador de archivos |
+| `Alt + F4` | Cerrar ventana |
+| `Alt + Tab` | Cambiar de ventana |
+| `Win + ← / →` | Acoplar la ventana a media pantalla |
+| `Win + ↑ / ↓` | Maximizar / minimizar |
+| `Ctrl + Win + ← / →` | Cambiar de escritorio virtual |
+| `Win + Shift + S` / `Impr Pant` | Captura de pantalla |
+| `Win + L` | Bloquear |
+| `Ctrl + Shift + Esc` | Administrador de tareas |
+| `Win + I` | Configuración |
+| Clic derecho en el escritorio | Menú (terminal, fondo, configuración…) |
+
+La configuración está en `~/.config/labwc/` (`rc.xml` atajos y ventanas,
+`menu.xml` menú del clic derecho). Aplica tus cambios con `labwc -r`. Las barras de
+título toman los colores del fondo, igual que el resto del escritorio.
+
 ## KDE Plasma estilo macOS (Parrot)
 
-Opción del instalador (viene desmarcada). Le da a Plasma la forma de macOS y
+Estilo del instalador (viene desmarcado). Le da a Plasma la forma de macOS y
 mantiene la identidad de Parrot:
 
 - **De macOS:** barra arriba con el menú de la app, dock flotante abajo,
@@ -110,7 +153,7 @@ mantiene la identidad de Parrot:
 - **Claro de día, oscuro de noche** (de 7:00 a 19:00), solo.
 - **Pantalla de inicio** estilo macOS (SDDM) con el fondo y el logo de Parrot.
 
-Se aplica desde dentro de la sesión **Plasma**; Niri no cambia:
+Se aplica solo la primera vez que entras en la sesión **Plasma**; Niri no cambia. A mano:
 
 ```bash
 estilo-plasma macos      # aplicar el estilo
@@ -121,6 +164,58 @@ systemctl --user disable --now plasma-modo-auto.timer   # sin cambio automático
 ```
 
 Temas basados en [WhiteSur](https://github.com/vinceliuice/WhiteSur-kde) (GPL-3.0).
+
+## Modo undercover (aspecto Windows)
+
+Inspirado en *Kali Undercover*, pero para Wayland: funciona en **Niri y en labwc**
+(el original solo funciona en XFCE). Pone la barra de tareas abajo con el botón de
+inicio, las aplicaciones abiertas y el reloj a la derecha; tema y fondo azules;
+quita el dock y los efectos del modo futurista. Útil en lugares públicos o para
+que el cambio desde Windows no sea brusco.
+
+```bash
+undercover on        # activarlo   (en Niri también: Super + Ctrl + Shift + U)
+undercover off       # volver exactamente a como estaba
+undercover estado
+```
+
+Antes de cambiar nada guarda tu configuración en
+`~/.local/state/parrot-dotfiles/undercover/`, y `undercover off` la restaura.
+
+## De Windows a Linux: dónde está cada cosa
+
+| En Windows | Aquí |
+|---|---|
+| Menú Inicio | `Super + Espacio` (o la tecla Win sola en labwc) |
+| Explorador de archivos | `Super + E` (Nautilus) |
+| Panel de control / Configuración | `Super + I` (DMS) |
+| Microsoft Store | Bazaar (opción "Tienda de apps" del instalador) |
+| Administrador de tareas | `Ctrl + Shift + Esc` |
+| Herramienta Recortes | `Super + Shift + S` |
+| Cerrar ventana | `Alt + F4` (también `Super + W`) |
+| Bloquear (Win + L) | `Super + L` en labwc, `Super + Ctrl + L` en Niri |
+| Instalar un `.exe` | No funcionan: busca la app en Bazaar o en la terminal con `apt search` |
+| Actualizar el sistema | `sudo apt update && sudo apt full-upgrade` |
+
+**¿Niri o labwc?** labwc se maneja como Windows: ventanas sueltas que mueves con el
+ratón. Niri pone las ventanas en **columnas sobre una tira infinita**: cada ventana
+nueva se abre a la derecha sin tapar las demás y te desplazas con `Super + ← / →`
+o la rueda del ratón; `Super + Tab` muestra todo desde arriba. Cuesta un par de
+días, pero nunca más tienes ventanas encimadas. Puedes tener los dos y cambiar
+cuando quieras.
+
+## Si algo falla en la instalación
+
+Todo lo que muestra el instalador queda guardado en
+`~/.cache/parrot-dotfiles/ultimo.log`, y al final lista los avisos. Lo más común:
+
+- **Falla `apt update`** (un repositorio o mirror caído): espera unos minutos y
+  ejecuta `sudo apt update --fix-missing`; luego vuelve a ejecutar `./install.sh`.
+- **El escritorio queda negro con solo el cursor**: DMS no abrió. Ejecuta
+  `dms doctor` en una terminal (`Super + Enter`) para ver qué falta.
+- Servicios en rojo como `hostapd-wpe`, `sslh` o `isc-dhcp-server` vienen de
+  `parrot-tools` (no de este repositorio) y fallan porque no están configurados;
+  no afectan al escritorio.
 
 ## Guardar cambios de configuración
 
@@ -138,5 +233,5 @@ tiene en tu carpeta personal.)
 | `install.sh` | Instalador |
 | `actualizar.sh` | Sube tu configuración actual al repositorio |
 | `paquetes/` | Listas de paquetes por componente |
-| `home/` | Configuración (Niri, DMS, terminales, mise, voxtype, modo futurista) y los comandos `sesion` y `futurista` |
+| `home/` | Configuración (Niri, DMS, terminales, mise, voxtype, modo futurista) escritorio labwc y los comandos `sesion`, `futurista` y `undercover` |
 | `vmware/` | Ajustes que solo se usan en VMware |

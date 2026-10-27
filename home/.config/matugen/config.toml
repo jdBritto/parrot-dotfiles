@@ -3,3 +3,10 @@
 [templates.futurista]
 input_path = '/home/jdbritto/.config/matugen/templates/futurista-colores.kdl'
 output_path = '/home/jdbritto/.config/niri/futurista-colores.kdl'
+
+# Colores de las ventanas de labwc (escritorio estilo Windows). labwc -r los
+# aplica al momento; si no estas en labwc no hace nada.
+[templates.labwc]
+input_path = '/home/jdbritto/.config/matugen/templates/labwc-colores'
+output_path = '/home/jdbritto/.config/labwc/themerc-override'
+post_hook = 'sh -c "pgrep -x labwc >/dev/null && labwc -r || true"'
