@@ -1,0 +1,39 @@
+{
+  "dankActions": {
+    "enabled": true,
+    "variants": [
+      {
+        "id": "pentest_ip",
+        "name": "IP local",
+        "icon": "lan",
+        "displayCommand": "~/.local/bin/pentest --ansi ip",
+        "clickCommand": "~/.local/bin/pentest copiar ip",
+        "updateInterval": 5,
+        "showIcon": true,
+        "showText": true
+      },
+      {
+        "id": "pentest_vpn",
+        "name": "VPN",
+        "icon": "vpn_lock",
+        "displayCommand": "~/.local/bin/pentest --ansi vpn",
+        "clickCommand": "~/.local/bin/pentest copiar vpn",
+        "updateInterval": 3,
+        "showIcon": true,
+        "showText": true
+      },
+      {
+        "id": "pentest_objetivo",
+        "name": "Objetivo",
+        "icon": "my_location",
+        "displayCommand": "~/.local/bin/pentest --ansi objetivo",
+        "clickCommand": "~/.local/bin/pentest copiar objetivo",
+        "rightClickCommand": "~/.local/bin/pentest fijar",
+        "middleClickCommand": "~/.local/bin/pentest borrar",
+        "updateInterval": 2,
+        "showIcon": true,
+        "showText": true
+      }
+    ]
+  }
+}

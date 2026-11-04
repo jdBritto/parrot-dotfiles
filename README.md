@@ -71,6 +71,25 @@ sesion parrot     # Plasma: el escritorio de Parrot o el estilo macOS (también:
 sesion estado     # ver cuál está elegido
 ```
 
+## Pentesting en la barra (Niri y Windows)
+
+La barra de DMS muestra tres islas, igual que la polybar de BSPWM:
+
+| Isla | Clic izquierdo | Clic derecho | Clic central |
+|---|---|---|---|
+| IP local (detecta la interfaz sola) | copiar | | |
+| VPN (tun0, wg0…) | copiar | | |
+| Máquina objetivo | copiar | fijar IP y nombre | borrar |
+
+`Super + Shift + V` también fija el objetivo. El objetivo es el mismo en todos
+los escritorios y en la terminal (`settarget`), y desde la terminal:
+
+```bash
+pentest fijar 10.10.11.42 Blue   # fijar sin preguntar
+pentest copiar vpn               # copiar la IP de la VPN
+pentest borrar                   # quitar el objetivo
+```
+
 ## Estilo BSPWM pentesting (opcional)
 
 Si marcas **BSPWM pentesting** en el instalador tendrás una sesión X11 con BSPWM:

@@ -52,5 +52,8 @@ binds {
     Mod+Shift+S hotkey-overlay-title="Captura de una zona" { spawn "dms" "screenshot"; }
     Mod+Ctrl+Shift+U hotkey-overlay-title="Modo Windows (undercover)" { spawn "undercover" "alternar"; }
 
+    // Pentesting (igual que en BSPWM). La barra muestra IP, VPN y objetivo.
+    Mod+Shift+V hotkey-overlay-title="Fijar maquina objetivo" { spawn "pentest" "fijar"; }
+
     // Espacios de trabajo: Mod+Tab = vista general (como en DMS)
 }

@@ -359,9 +359,13 @@ H="$REPO/home"
 copiar "$H" .local/bin/sesion
 chmod +x "$HOME/.local/bin/sesion"
 if usa_dms; then
-  copiar "$H" .config/DankMaterialShell .config/matugen .local/bin/undercover
+  copiar "$H" .config/DankMaterialShell .config/matugen .local/bin/undercover .local/bin/pentest
   sed -i "s|/home/jdbritto|$HOME|g" "$HOME/.config/matugen/config.toml"
-  chmod +x "$HOME/.local/bin/undercover"
+  chmod +x "$HOME/.local/bin/undercover" "$HOME/.local/bin/pentest"
+  # Islas de pentesting de la barra (IP, VPN y objetivo): plugin Dank Actions
+  if ! dms plugins list 2>/dev/null | grep -q dankActions; then
+    dms plugins install dankActions >/dev/null 2>&1 || aviso "No se pudo instalar el plugin Dank Actions (islas de pentesting)."
+  fi
 fi
 if quiere niri; then
   copiar "$H" .config/niri .local/bin/futurista
@@ -606,6 +610,7 @@ if quiere niri; then
   echo "  - Niri moderno: Super + K muestra los atajos, Super + Tab la vista general."
   quiere futurista && echo "    Modo futurista (animaciones y efectos):  futurista on  /  futurista off"
 fi
+usa_dms && echo "  - Pentesting en la barra: IP, VPN y objetivo (clic copia, Super + Shift + V fija el objetivo)"
 usa_dms && echo "  - Aspecto Windows sobre DMS (barra abajo, tema azul):  undercover on  /  undercover off"
 quiere windows && echo "  - Windows (labwc): sesion \"labwc\" en la pantalla de inicio, o:  sesion windows"
 if quiere hyprland; then

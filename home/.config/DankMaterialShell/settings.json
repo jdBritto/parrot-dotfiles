@@ -42,6 +42,9 @@
         "weather"
       ],
       "rightWidgets": [
+        "dankActions:pentest_ip",
+        "dankActions:pentest_vpn",
+        "dankActions:pentest_objetivo",
         "systemTray",
         "clipboard",
         "cpuUsage",

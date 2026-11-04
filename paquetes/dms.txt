@@ -18,6 +18,10 @@ xdg-user-dirs
 nautilus
 fonts-noto-core
 fonts-noto-color-emoji
+# Islas de pentesting de la barra (comando pentest): pedir la IP y avisos
+fuzzel
+libnotify-bin
+iproute2
 # Para los comandos futurista y undercover (este dibuja su fondo azul)
 python3
 python3-pil
