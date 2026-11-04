@@ -1,0 +1,10 @@
+#!/bin/sh
+# Saver de xsecurelock: lluvia Matrix a pantalla completa (efecto "desencriptando").
+# Color: cambia -fg y -C (green/cyan/blue/red/white/yellow/magenta); velocidad con -u (0=rápido).
+exec xterm \
+    -class xsecurelock-saver \
+    -into "$XSCREENSAVER_WINDOW" \
+    -geometry 9999x9999 \
+    -fa "Hack Nerd Font Mono" -fs 12 \
+    -bg black -fg "#2BE84F" -b 0 -bw 0 +sb -cr black \
+    -e cmatrix -b -u 2 -C green

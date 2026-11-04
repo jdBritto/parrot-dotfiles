@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+# Cambia el fondo en BSPWM y pinta todo el escritorio con sus colores,
+# igual que hace DankMaterialShell en Niri (usan la misma paleta).
+#
+#   fondo              -> elegir con miniaturas (rofi)          [Super+Ctrl+Space]
+#   fondo <imagen>     -> usar esa imagen
+#   fondo azar         -> uno al azar de la carpeta de fondos
+#   fondo recargar     -> solo volver a aplicar los colores actuales
+#
+# Qué se pinta: bordes de bspwm, polybar, rofi, dunst, kitty, GTK, Qt,
+# Firefox y nvim (con DMS) o solo los de BSPWM (si DMS no está).
+# El fondo elegido también queda como fondo de Niri.
+
+CARPETAS=("$HOME/Pictures/Fondos" "$HOME/Desktop/Background" "/usr/share/backgrounds")
+DMS_AJUSTES=$HOME/.config/DankMaterialShell/settings.json
+DMS_SESION=$HOME/.local/state/DankMaterialShell/session.json
+TEMA_ROFI=$HOME/.config/rofi/themes/moderno.rasi
+
+listar() {
+    find "${CARPETAS[@]}" -maxdepth 2 -type f \
+        \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) 2>/dev/null | sort
+}
+
+elegir() {
+    local -a fotos; mapfile -t fotos < <(listar)
+    [ ${#fotos[@]} -eq 0 ] && { notify-send "Fondo" "No hay imágenes en ${CARPETAS[0]}"; exit 1; }
+    local i
+    i=$(for f in "${fotos[@]}"; do printf '%s\0icon\x1f%s\n' "$(basename "${f%.*}")" "$f"; done |
+        rofi -dmenu -i -show-icons -format i -p "󰸉  Fondo" -theme "$TEMA_ROFI" \
+             -theme-str 'window { width: 900px; } listview { columns: 4; lines: 3; flow: horizontal; }
+                         element { orientation: vertical; padding: 8px; spacing: 6px; }
+                         element-icon { size: 150px; border-radius: 10px; }
+                         element-text { horizontal-align: 0.5; font: "JetBrainsMono Nerd Font 8"; }') || exit 0
+    echo "${fotos[$i]}"
+}
+
+esquema() { # el mismo tipo de paleta que tienes elegido en DMS
+    python3 -I -c 'import json,sys
+try: print(json.load(open(sys.argv[1])).get("matugenScheme","scheme-tonal-spot"))
+except Exception: print("scheme-tonal-spot")' "$DMS_AJUSTES"
+}
+
+compartir_con_niri() {
+    [ -f "$DMS_SESION" ] || return 0
+    python3 -I - "$DMS_SESION" "$1" <<'PY'
+import json, sys
+ruta, img = sys.argv[1], sys.argv[2]
+d = json.load(open(ruta)); d["wallpaperPath"] = img
+json.dump(d, open(ruta, "w"), indent=2)
+PY
+}
+
+generar_colores() {
+    local img=$1 tipo; tipo=$(esquema)
+    if command -v dms >/dev/null; then
+        # mismos argumentos que usa la shell de DMS (Common/Theme.qml)
+        dms matugen generate --state-dir "$HOME/.cache/dms" --shell-dir /usr/share/quickshell/dms \
+            --config-dir "$HOME/.config" --kind image --value "$img" --mode dark \
+            --matugen-type "$tipo" >/dev/null 2>&1 && return
+    fi
+    matugen image "$img" -t "$tipo" -m dark --source-color-index 0 -q \
+        -c "$HOME/.config/matugen/config.toml"
+}
+
+recargar() {
+    # bordes de bspwm
+    if [ -r "$HOME/.config/bspwm/colores.sh" ] && pgrep -x bspwm >/dev/null; then
+        . "$HOME/.config/bspwm/colores.sh"
+        bspc config focused_border_color  "$ACENTO"
+        bspc config active_border_color   "$BORDE_INACTIVO"
+        bspc config normal_border_color   "$BORDE_INACTIVO"
+        bspc config presel_feedback_color "$TERCIARIO"
+    fi
+    pgrep -x polybar >/dev/null && polybar-msg cmd restart >/dev/null 2>&1
+    pgrep -x dunst   >/dev/null && dunstctl reload 2>/dev/null
+    pkill -USR1 -x kitty 2>/dev/null   # kitty relee su config (dank-theme.conf)
+    return 0
+}
+
+aplicar() {
+    local img; img=$(readlink -f "$1")
+    [ -f "$img" ] || { echo "No existe: $1" >&2; exit 1; }
+    feh --no-fehbg --bg-fill "$img"
+    printf '#!/bin/sh\nfeh --no-fehbg --bg-fill %q\n' "$img" >"$HOME/.fehbg"; chmod +x "$HOME/.fehbg"
+    compartir_con_niri "$img"
+    generar_colores "$img"
+    recargar
+    notify-send -i "$img" "󰸉 Fondo y colores aplicados" "$(basename "$img")"
+}
+
+case "${1:-}" in
+    "")        sel=$(elegir) && [ -n "$sel" ] && aplicar "$sel" ;;
+    azar)      aplicar "$(listar | shuf -n1)" ;;
+    recargar)  recargar ;;
+    -h|--help) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//' ;;
+    *)         aplicar "$1" ;;
+esac

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Captura de pantalla: se guarda en ~/Pictures/Screenshots (igual que Niri)
+# y se copia al portapapeles.   captura area | pantalla | ventana
+DIR="$HOME/Pictures/Screenshots"; mkdir -p "$DIR"
+F="$DIR/Screenshot from $(date '+%Y-%m-%d %H-%M-%S').png"
+case "${1:-area}" in
+    area)     import "$F" ;;                                    # arrastra para elegir
+    pantalla) import -window root "$F" ;;
+    ventana)  import -window "$(bspc query -N -n focused)" "$F" ;;
+esac || exit 0
+[ -s "$F" ] || exit 0
+xclip -selection clipboard -t image/png -i "$F"
+notify-send -i "$F" "󰹑 Captura guardada" "Copiada al portapapeles"

@@ -71,6 +71,35 @@ sesion parrot     # Plasma: el escritorio de Parrot o el estilo macOS (también:
 sesion estado     # ver cuál está elegido
 ```
 
+## Estilo BSPWM pentesting (opcional)
+
+Si marcas **BSPWM pentesting** en el instalador tendrás una sesión X11 con BSPWM:
+polybar en islas para pentesting (IP local, VPN, máquina objetivo), escritorios
+estilo Pac-Man, rofi, dunst, picom y bloqueo con xsecurelock (animación Matrix).
+Elígela en la pantalla de inicio (sesión **bspwm**) o con `sesion bspwm`.
+
+Usa **los mismos colores que Niri**: todo sale del fondo de pantalla con matugen.
+
+```bash
+fondo            # elegir fondo con miniaturas (Super + Ctrl + Espacio)
+fondo azar       # uno al azar
+fondo <imagen>   # uno concreto
+```
+
+Al cambiar el fondo se pintan bordes, polybar, rofi, notificaciones, kitty, GTK,
+Qt y Firefox, y el fondo queda también como fondo de Niri.
+
+| Atajo | Acción |
+|---|---|
+| `Super + Enter` | Terminal (kitty) |
+| `Super + Espacio` | Buscar aplicaciones |
+| `Super + Ctrl + Espacio` | Elegir fondo |
+| `Super + H` | Ver todos los atajos |
+| `Super + Shift + V` | Fijar la máquina objetivo |
+| `Super + Shift + Esc` | Apagar / reiniciar / cerrar sesión |
+| `Super + Shift + X` | Bloquear pantalla |
+| `Impr` | Captura de un área (al portapapeles y a ~/Pictures/Screenshots) |
+
 ## Atajos principales (Niri)
 
 | Atajo | Qué hace |

@@ -10,3 +10,20 @@ output_path = '/home/jdbritto/.config/niri/futurista-colores.kdl'
 input_path = '/home/jdbritto/.config/matugen/templates/labwc-colores'
 output_path = '/home/jdbritto/.config/labwc/themerc-override'
 post_hook = 'sh -c "pgrep -x labwc >/dev/null && labwc -r || true"'
+
+# ---- BSPWM: los mismos colores del fondo que usa Niri/DMS
+[templates.bspwm]
+input_path = '/home/jdbritto/.config/matugen/templates/bspwm-colores.sh'
+output_path = '/home/jdbritto/.config/bspwm/colores.sh'
+
+[templates.polybar]
+input_path = '/home/jdbritto/.config/matugen/templates/polybar-colores.ini'
+output_path = '/home/jdbritto/.config/polybar/colores-tema.ini'
+
+[templates.rofi]
+input_path = '/home/jdbritto/.config/matugen/templates/rofi-colores.rasi'
+output_path = '/home/jdbritto/.config/rofi/colores.rasi'
+
+[templates.dunst]
+input_path = '/home/jdbritto/.config/matugen/templates/dunst-colores.conf'
+output_path = '/home/jdbritto/.config/dunst/dunstrc.d/50-colores.conf'

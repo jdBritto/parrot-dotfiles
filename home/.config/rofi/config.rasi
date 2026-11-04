@@ -1,0 +1,19 @@
+configuration {
+    modi:                "drun,run,window,filebrowser";
+    show-icons:          true;
+    icon-theme:          "Flat-Remix-Green-Dark";
+    terminal:            "kitty";
+    drun-display-format: "{name}";
+    display-drun:        "  Apps";
+    display-run:         "  Comandos";
+    display-window:      "  Ventanas";
+    display-filebrowser: "  Archivos";
+    matching:            "fuzzy";
+    sort:                true;
+    sorting-method:      "fzf";
+    hover-select:        true;
+    me-select-entry:     "";
+    me-accept-entry:     "MousePrimary";
+    kb-cancel:           "Escape,Super+space";
+}
+@theme "~/.config/rofi/themes/moderno.rasi"

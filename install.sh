@@ -89,6 +89,7 @@ agregar windows estilo "Windows (labwc)" "Ventanas flotantes con minimizar/maxim
 agregar hyprland estilo "Hyprland Parrot" "Hyprland con 7 temas que se cambian al instante (Parrot, HackTheBox, Vaporwave...), barra, menus faciles (Super + A), columnas como Niri y modo rendimiento para equipos modestos." no
 command -v plasmashell >/dev/null &&
   agregar macos estilo "macOS (KDE Plasma)" "Barra arriba con el menu de la app, dock abajo, botones de Mac y Spotlight (Meta+Espacio), con los iconos, el verde, el logo y el fondo de Parrot. Claro de dia y oscuro de noche, y pantalla de inicio estilo macOS." no
+agregar bspwm estilo "BSPWM pentesting (X11)" "BSPWM con la polybar en islas (IP, VPN y maquina objetivo), escritorios Pac-Man y rofi. Los colores salen del fondo, igual que en Niri: comando fondo o Super + Ctrl + Espacio." no
 $TIENE_PANTALLA_INICIO || agregar pantalla-inicio extra "Pantalla de inicio (SDDM)" "Este equipo no tiene pantalla de inicio de sesion; instala SDDM." si
 agregar terminales extra "Terminales" "Ghostty, Kitty, Alacritty y Foot con su configuracion y la fuente JetBrainsMono Nerd." si
 agregar apps extra "Apps" "Firefox, nano y cava." si
@@ -102,7 +103,7 @@ quiere() { [[ ${MARCA[$1]:-no} == si ]]; }
 cambiar() { if quiere "$1"; then MARCA[$1]=no; else MARCA[$1]=si; fi; }
 # Niri y Windows usan DankMaterialShell; macOS no lo necesita.
 usa_dms() { quiere niri || quiere windows; }
-estilos_elegidos() { local id; for id in niri windows hyprland macos; do quiere "$id" && echo "$id"; done; return 0; }
+estilos_elegidos() { local id; for id in niri windows hyprland bspwm macos; do quiere "$id" && echo "$id"; done; return 0; }
 declare -A TITULO_GRUPO=([estilo]="ESTILO DEL ESCRITORIO  (puedes elegir varios)" [extra]="EXTRAS")
 
 leer_tecla() {  # deja en TECLA la tecla pulsada; las flechas llegan como Esc + [A / [B
@@ -159,7 +160,7 @@ menu() {
 }
 
 # Con que estilo arranca el equipo (solo se pregunta si hay mas de uno).
-declare -A NOMBRE_ARRANQUE=([niri]="Niri moderno" [windows]="Windows (labwc)" [hyprland]="Hyprland Parrot" [macos]="macOS (KDE Plasma)")
+declare -A NOMBRE_ARRANQUE=([niri]="Niri moderno" [windows]="Windows (labwc)" [hyprland]="Hyprland Parrot" [bspwm]="BSPWM pentesting" [macos]="macOS (KDE Plasma)")
 elegir_arranque() {
   local opciones actual=0 i
   mapfile -t opciones < <(estilos_elegidos)
@@ -235,7 +236,7 @@ agregar_repo() { # agregar_repo NOMBRE URL_CLAVE LINEA_DEB
   curl -fsSL "$clave" | sudo gpg --dearmor --yes -o "/etc/apt/keyrings/$nombre.gpg"
   echo "deb [signed-by=/etc/apt/keyrings/$nombre.gpg] $linea" | sudo tee "/etc/apt/sources.list.d/$nombre.list" >/dev/null
 }
-if usa_dms; then
+if usa_dms || quiere bspwm; then  # BSPWM usa matugen de este repositorio
   agregar_repo duxlabs "$OBS:/danklinux/Debian_13/Release.key" "$OBS:/danklinux/Debian_13/ /"
   agregar_repo avengemedia-dms "$OBS:/dms/Debian_13/Release.key" "$OBS:/dms/Debian_13/ /"
 fi
@@ -378,6 +379,14 @@ if quiere hyprland; then
   chmod +x "$HOME"/.config/hypr/scripts/*.sh
   "$HOME/.config/hypr/scripts/tema.sh" generar >/dev/null || aviso "No se pudieron crear los colores del tema de Hyprland."
 fi
+if quiere bspwm; then
+  copiar "$H" .config/bspwm .config/sxhkd .config/polybar .config/rofi .config/dunst .config/picom \
+    .config/xsecurelock .config/matugen .local/bin/fondo ATAJOS.md
+  sed -i "s|/home/jdbritto|$HOME|g" "$HOME/.config/matugen/config.toml"
+  chmod +x "$HOME/.config/bspwm/bspwmrc" "$HOME"/.config/bspwm/scripts/* "$HOME"/.config/polybar/*.sh \
+    "$HOME"/.config/polybar/scripts/*.sh "$HOME"/.config/rofi/scripts/*.sh "$HOME"/.config/xsecurelock/* \
+    "$HOME/.local/bin/fondo"
+fi
 if quiere macos; then
   copiar "$H" .local/bin/estilo-plasma .local/bin/pantalla-login .local/share/plasma .local/share/aurorae \
     .local/share/color-schemes/WhiteSurParrot.colors .local/share/color-schemes/WhiteSurParrotDark.colors \
@@ -419,6 +428,18 @@ if quiere terminales && ! fc-list 2>/dev/null | grep -q "JetBrainsMono Nerd"; th
   else
     aviso "No se pudo descargar la fuente; las terminales usaran otra."
   fi
+fi
+
+# ---------------------------------------------------------------- fuentes de la polybar (BSPWM)
+if quiere bspwm; then
+  for fuente in Iosevka Hack Hermit; do
+    fc-list 2>/dev/null | grep -qi "${fuente/Hermit/Hurmit} Nerd" && continue
+    verde "Instalando la fuente $fuente Nerd Font (polybar)"
+    mkdir -p "$HOME/.local/share/fonts/${fuente}Nerd"
+    curl -fsSL "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/$fuente.tar.xz" |
+      tar -xJ -C "$HOME/.local/share/fonts/${fuente}Nerd" || aviso "No se pudo descargar la fuente $fuente."
+  done
+  fc-cache -f >/dev/null 2>&1 || true
 fi
 
 # ---------------------------------------------------------------- fondos
@@ -552,7 +573,7 @@ fi
 
 # ---------------------------------------------------------------- sesion de inicio
 # Archivo .desktop de la sesion de cada estilo (macOS es la sesion de Plasma).
-declare -A SESION_DE=([niri]=niri [windows]=labwc [hyprland]=hyprland [macos]=plasma)
+declare -A SESION_DE=([niri]=niri [windows]=labwc [hyprland]=hyprland [bspwm]=bspwm [macos]=plasma)
 SESION=${SESION_DE[$ARRANQUE]}
 verde "Eligiendo ${NOMBRE_ARRANQUE[$ARRANQUE]} como escritorio de inicio"
 AUTO=""
@@ -591,12 +612,16 @@ if quiere hyprland; then
   echo "  - Hyprland Parrot: sesion \"Hyprland\" en la pantalla de inicio, o:  sesion hyprland"
   echo "    Super + A ajustes rapidos · Super + K atajos · Super + Alt + T tema · Super + Alt + P modo rendimiento"
 fi
+if quiere bspwm; then
+  echo "  - BSPWM pentesting: sesion \"bspwm\" en la pantalla de inicio, o:  sesion bspwm"
+  echo "    Super + H atajos · Super + Ctrl + Espacio fondo y colores · Super + Shift + V maquina objetivo"
+fi
 if quiere macos; then
   echo "  - macOS (KDE Plasma): sesion \"Plasma\" en la pantalla de inicio, o:  sesion parrot"
   echo "    Modo claro/oscuro:  estilo-plasma claro  /  estilo-plasma oscuro"
 fi
 quiere tienda && echo "  - Tienda de apps: Bazaar (los .flatpak se abren con doble clic)"
-echo "  - Cambiar el escritorio de inicio:  sesion niri | windows | hyprland | parrot"
+echo "  - Cambiar el escritorio de inicio:  sesion niri | windows | hyprland | bspwm | parrot"
 echo
 echo "Para agregar un estilo o algo que no elegiste, vuelve a ejecutar ./install.sh"
 

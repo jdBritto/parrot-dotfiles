@@ -1,0 +1,41 @@
+/* Tema a juego con la polybar. Colores: ../colores.rasi (matugen) */
+@import "~/.config/rofi/colores.rasi"
+* {
+    font:             "Hack Nerd Font Mono 12";
+    background-color: transparent;
+    text-color:       @fg;
+    margin: 0; padding: 0; spacing: 0;
+}
+
+window {
+    location:         center;
+    width:            560px;
+    border:           2px;
+    border-color:     @accent;
+    border-radius:    20px;
+    background-color: @bg;
+}
+
+mainbox  { padding: 16px; spacing: 12px; }
+
+inputbar {
+    background-color: @bg-alt;
+    border-radius:    14px;
+    padding:          10px 16px;
+    spacing:          10px;
+    children:         [ prompt, entry ];
+}
+prompt   { text-color: @accent; }
+entry    { placeholder: "Buscar..."; placeholder-color: @muted; cursor: text; }
+
+message  { background-color: @bg-alt; border-radius: 14px; }
+textbox  { padding: 8px 16px; }
+
+listview { lines: 8; columns: 1; fixed-height: false; scrollbar: false; spacing: 4px; }
+
+element                 { padding: 8px 16px; spacing: 10px; border-radius: 12px; }
+element normal active   { text-color: @accent; }
+element selected normal,
+element selected active { background-color: @accent; text-color: @accent-fg; }
+element-icon            { size: 1.1em; vertical-align: 0.5; }
+element-text            { text-color: inherit; vertical-align: 0.5; }

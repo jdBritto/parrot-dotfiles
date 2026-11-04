@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Pide IP y nombre en un popup de rofi y fija la máquina objetivo de la polybar.
+# Escribe en ~/.config/bin/target (igual que la función settarget de zsh).
+# La polybar lo detecta sola en ~2 s. Se abre con Super + Shift + V.
+
+TARGET_FILE="$HOME/.config/bin/target"
+TEMA="$HOME/.config/rofi/themes/atajos.rasi"
+ICO_IP=$''      # globo / red
+ICO_PC=$''      # monitor
+ICO_TGT=$'\U000F0BF0' # objetivo
+BORRAR="$ICO_TGT  Borrar objetivo (No target)"
+
+mkdir -p "$(dirname "$TARGET_FILE")"
+actual=$(tr -s ' ' <"$TARGET_FILE" 2>/dev/null)
+[ -n "$actual" ] && msg="Objetivo actual: <b>$actual</b>" || msg="No hay objetivo fijado."
+
+clear_target() {
+    : >"$TARGET_FILE"
+    command -v notify-send >/dev/null && notify-send "$ICO_TGT Objetivo borrado" "La polybar mostrará «No target»."
+    exit 0
+}
+
+# 1) IP  (o elegir «Borrar objetivo» de la lista)
+sel=$(printf '%s\n' "$BORRAR" | rofi -dmenu -i \
+    -p "$ICO_IP  IP objetivo" \
+    -mesg "$msg · escribe una IP y Enter · o elige «Borrar» · <b>Esc</b> cancela" \
+    -theme "$TEMA" \
+    -theme-str 'window { width: 580px; } listview { lines: 1; } mainbox { children: [ inputbar, message, listview ]; }')
+rc=$?
+
+[ "$rc" -ne 0 ] && exit 0                       # Esc = cancelar
+[ -z "$sel" ] && clear_target                   # Enter en vacío = borrar
+[ "$sel" = "$BORRAR" ] && clear_target          # opción «Borrar» = borrar
+ip=$(echo "$sel" | awk '{print $1}')
+
+# 2) Nombre (opcional)
+name=$(rofi -dmenu -i -p "$ICO_PC  Nombre de la máquina" \
+    -mesg "Opcional · <b>Esc</b> cancela · vacío = «target»" \
+    -theme "$TEMA" \
+    -theme-str 'window { width: 580px; } listview { enabled: false; } mainbox { children: [ inputbar, message ]; }') || exit 0
+name=$(echo "$name" | awk '{print $1}')
+[ -z "$name" ] && name="target"
+
+echo "$ip $name" >"$TARGET_FILE"
+command -v xclip >/dev/null && printf '%s' "$ip" | xclip -selection clipboard
+command -v notify-send >/dev/null && notify-send "$ICO_TGT Objetivo fijado" "$ip - $name (IP copiada al portapapeles)"

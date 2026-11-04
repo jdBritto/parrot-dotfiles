@@ -1,0 +1,51 @@
+/* Tema principal de rofi. Colores: ../colores.rasi (los genera matugen del fondo) */
+@import "~/.config/rofi/colores.rasi"
+
+* {
+    font:             "JetBrainsMono Nerd Font 11";
+    background-color: transparent;
+    text-color:       @fg;
+    margin: 0; padding: 0; spacing: 0;
+}
+
+window {
+    location:         center;
+    width:            640px;
+    border:           2px;
+    border-color:     @accent;
+    border-radius:    20px;
+    background-color: @bg;
+}
+
+mainbox  { padding: 18px; spacing: 14px; children: [ inputbar, mode-switcher, message, listview ]; }
+
+inputbar {
+    background-color: @bg-alt;
+    border-radius:    14px;
+    padding:          12px 16px;
+    spacing:          12px;
+    children:         [ prompt, entry ];
+}
+prompt   { text-color: @accent; }
+entry    { placeholder: "Buscar..."; placeholder-color: @muted; cursor: text; }
+
+mode-switcher { spacing: 8px; }
+button {
+    padding: 6px 12px; border-radius: 10px;
+    background-color: @bg-alt; text-color: @muted;
+}
+button selected { background-color: @accent; text-color: @accent-fg; }
+
+message  { background-color: @bg-alt; border-radius: 12px; }
+textbox  { padding: 8px 16px; text-color: @muted; }
+
+listview { lines: 8; columns: 1; fixed-height: true; scrollbar: false; spacing: 4px; }
+
+element                 { padding: 9px 14px; spacing: 12px; border-radius: 12px; }
+element normal.active,
+element alternate.active { text-color: @third; }
+element normal.urgent   { text-color: @urgent; }
+element selected.normal,
+element selected.active { background-color: @bg-sel; text-color: @fg-sel; }
+element-icon            { size: 1.5em; vertical-align: 0.5; }
+element-text            { text-color: inherit; vertical-align: 0.5; highlight: bold; }

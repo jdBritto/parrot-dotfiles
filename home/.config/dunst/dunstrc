@@ -1,0 +1,42 @@
+# Tema a juego con la polybar
+[global]
+    monitor = 0
+    follow = mouse
+    origin = top-right
+    offset = (20, 70)
+    width = 360
+    height = (0, 200)
+    notification_limit = 5
+    gap_size = 8
+    padding = 14
+    horizontal_padding = 16
+    frame_width = 2
+    frame_color = "#44ABFF"
+    corner_radius = 16
+    separator_color = frame
+    font = Hack Nerd Font Mono 11
+    format = "<b>%s</b>\n%b"
+    alignment = left
+    icon_position = left
+    max_icon_size = 48
+    show_age_threshold = 60
+    mouse_left_click = do_action, close_current
+    mouse_right_click = close_all
+
+[urgency_low]
+    background = "#161B26E6"
+    foreground = "#6E7681"
+    frame_color = "#232A38"
+    timeout = 4
+
+[urgency_normal]
+    background = "#161B26E6"
+    foreground = "#E6EDF3"
+    frame_color = "#44ABFF"
+    timeout = 6
+
+[urgency_critical]
+    background = "#161B26E6"
+    foreground = "#E6EDF3"
+    frame_color = "#E5534B"
+    timeout = 0

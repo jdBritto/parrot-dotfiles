@@ -4,6 +4,7 @@
 #   sesion niri       -> Niri con DankMaterialShell (ventanas en columnas)
 #   sesion windows    -> labwc con DankMaterialShell (ventanas como en Windows)
 #   sesion hyprland   -> Hyprland Parrot (temas, menus y modo rendimiento)
+#   sesion bspwm      -> BSPWM pentesting (X11, polybar en islas)
 #   sesion parrot     -> el escritorio que traia Parrot (KDE Plasma, MATE...)
 #   sesion macos      -> lo mismo: KDE Plasma, donde va el estilo macOS
 #   sesion alternar   -> pasar al siguiente (niri -> windows -> hyprland -> parrot)
@@ -32,7 +33,7 @@ escritorio_parrot() {
   done
   for d in "${SESIONES[@]}"; do
     for f in "$d"/*.desktop; do
-      [[ -e $f && $(basename "$f") != niri* && $(basename "$f") != labwc* && $(basename "$f") != hyprland* ]] && { basename "$f"; return; }
+      [[ -e $f && $(basename "$f") != niri* && $(basename "$f") != labwc* && $(basename "$f") != hyprland* && $(basename "$f") != bspwm* ]] && { basename "$f"; return; }
     done
   done
 }
@@ -41,6 +42,7 @@ actual() {
   if grep -qE "^$CLAVE=niri" "$CONF" 2>/dev/null; then echo niri
   elif grep -qE "^$CLAVE=labwc" "$CONF" 2>/dev/null; then echo windows
   elif grep -qE "^$CLAVE=hyprland" "$CONF" 2>/dev/null; then echo hyprland
+  elif grep -qE "^$CLAVE=bspwm" "$CONF" 2>/dev/null; then echo bspwm
   else echo parrot; fi
 }
 
@@ -73,6 +75,9 @@ case "${1:-estado}" in
   hyprland) [[ -f /usr/share/wayland-sessions/hyprland.desktop ]] ||
               { echo "Falta Hyprland: vuelve a ejecutar install.sh y marca \"Hyprland Parrot\"."; exit 1; }
             cambiar hyprland hyprland.desktop ;;
+  bspwm)    [[ -f /usr/share/xsessions/bspwm.desktop ]] ||
+              { echo "Falta BSPWM: vuelve a ejecutar install.sh y marca \"BSPWM pentesting\"."; exit 1; }
+            cambiar bspwm bspwm.desktop ;;
   parrot | macos) cambiar parrot "$(escritorio_parrot)" ;;
   alternar) hay() { [[ -f /usr/share/wayland-sessions/$1.desktop ]]; }
             case $(actual) in
@@ -82,5 +87,5 @@ case "${1:-estado}" in
               *) if hay niri; then exec "$0" niri; elif hay hyprland; then exec "$0" hyprland; else exec "$0" parrot; fi ;;
             esac ;;
   estado)   echo "Sesion elegida: $(actual)" ;;
-  *)        sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+  *)        sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

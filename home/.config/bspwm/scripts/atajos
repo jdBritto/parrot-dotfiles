@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# Muestra en un popup de rofi los atajos documentados en ~/ATAJOS.md.
+# Se abre con Super + H (definido en ~/.config/sxhkd/sxhkdrc).
+# Tema: ~/.config/rofi/themes/atajos.rasi  ·  Iconos: Hack Nerd Font
+
+GUIA="$HOME/ATAJOS.md"
+TEMA="$HOME/.config/rofi/themes/atajos.rasi"
+
+if [ ! -f "$GUIA" ]; then
+    rofi -e "No se encontró $GUIA"
+    exit 1
+fi
+
+# Evita abrir dos popups a la vez
+if pgrep -f "rofi.*atajos.rasi" >/dev/null; then
+    exit 0
+fi
+
+# Iconos Nerd Font por sección
+I_SISTEMA=$''     # monitor
+I_VENTANAS=$''    # ventana
+I_FOCO=$''        # flechas
+I_ESCRIT=$''      # cuadrícula
+I_PRESEL=$''      # columnas
+I_KITTY=$''       # terminal
+I_ZSH=$''         # consola
+I_OTRO=$''        # teclado
+I_TARGET=$'\U000F0BF0'  # objetivo (como la polybar)
+I_POLY=$'\uf0e4'      # panel / barra
+I_FLECHA=$''      # separador
+I_PROMPT=$''      # teclado (barra de búsqueda)
+
+awk -v i_sis="$I_SISTEMA" -v i_ven="$I_VENTANAS" -v i_foc="$I_FOCO" \
+    -v i_esc="$I_ESCRIT" -v i_pre="$I_PRESEL" -v i_kit="$I_KITTY" \
+    -v i_zsh="$I_ZSH" -v i_otr="$I_OTRO" -v flecha="$I_FLECHA" \
+    -v i_tgt="$I_TARGET" -v i_poly="$I_POLY" '
+    function esc(s) { gsub(/&/, "\\&amp;", s); gsub(/</, "\\&lt;", s); gsub(/>/, "\\&gt;", s); return s }
+
+    /^## / {
+        sec = substr($0, 4); sub(/ \(.*/, "", sec)
+        # icono y color según la sección
+        if      (sec ~ /Sistema/)     { ico = i_sis; col = "#7AA2F7" }
+        else if (sec ~ /Ventanas/)    { ico = i_ven; col = "#BB9AF7" }
+        else if (sec ~ /Foco/)        { ico = i_foc; col = "#7DCFFF" }
+        else if (sec ~ /Escritorios/) { ico = i_esc; col = "#9ECE6A" }
+        else if (sec ~ /Preselec/)    { ico = i_pre; col = "#E0AF68" }
+        else if (sec ~ /kitty/)       { ico = i_kit; col = "#FF9E64" }
+        else if (sec ~ /Zsh/)         { ico = i_zsh; col = "#F7768E" }
+        else if (sec ~ /Comandos/)    { ico = i_tgt;  col = "#E51D0B" }
+        else if (sec ~ /polybar/)     { ico = i_poly; col = "#2495E7" }
+        else                          { ico = i_otr; col = "#A9B1D6" }
+        corto = sec; sub(/ y .*|,.*| \(.*/, "", corto); sub(/^Terminal /, "", corto)
+        next
+    }
+
+    /^\| / {
+        n = split($0, c, "|")
+        if (n < 4) next
+        key = c[2]; act = c[3]
+        gsub(/`|\*\*/, "", key); gsub(/\*\*|`/, "", act)
+        gsub(/^ +| +$/, "", key); gsub(/^ +| +$/, "", act)
+        # saltar cabecera "| Atajo | Acción |" y separador "|---|---|"
+        if (key == "Atajo" || key ~ /^-+$/ || key == "") next
+
+        # relleno calculado sobre el texto plano para que las columnas queden alineadas
+        tecla = sprintf("%-32s", key)
+        printf "<span foreground=\"%s\" font=\"Hack Nerd Font 15\">%s</span>   <b>%s</b> <span foreground=\"#5A5A66\">%s</span>  %s  <span foreground=\"#6B6B78\" size=\"small\"><i>%s</i></span>\n",
+               col, ico, esc(tecla), flecha, esc(act), esc(corto)
+    }
+' "$GUIA" | rofi -dmenu -i -markup-rows \
+    -p "$I_PROMPT  Atajos" \
+    -mesg "<b>Super</b> = tecla Windows   ·   escribe para filtrar   ·   <b>Esc</b> para cerrar" \
+    -theme "$TEMA" \
+    >/dev/null

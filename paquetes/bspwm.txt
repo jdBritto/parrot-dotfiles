@@ -1,0 +1,22 @@
+# Estilo BSPWM pentesting (X11): polybar en islas, rofi y los colores del fondo
+# (matugen viene del repositorio DankLinux, igual que en Niri)
+bspwm
+sxhkd
+polybar
+picom
+rofi
+dunst
+feh
+copyq
+xclip
+imagemagick
+libnotify-bin
+x11-xserver-utils
+xsecurelock
+xss-lock
+mate-polkit
+bat
+htop
+fonts-freefont-ttf
+fonts-noto-color-emoji
+matugen

@@ -15,6 +15,12 @@ for arbol in "${ARBOLES[@]}"; do
   done < <(find "$REPO/$arbol" -type f -print0)
 done
 
+# install.sh cambia /home/jdbritto por la carpeta de cada usuario: guardarlo
+# siempre con ese marcador y no con la ruta de este equipo.
+for f in home/.config/matugen/config.toml home/.config/niri/personal.kdl; do
+  [[ -f $REPO/$f ]] && sed -i "s|$HOME/|/home/jdbritto/|g" "$REPO/$f"
+done
+
 cd "$REPO"
 git add -A
 if git diff --cached --quiet; then

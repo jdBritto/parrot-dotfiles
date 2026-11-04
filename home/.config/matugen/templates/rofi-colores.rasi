@@ -1,0 +1,14 @@
+/* Lo genera matugen a partir del fondo. No editar aqui:
+   edita ~/.config/matugen/templates/rofi-colores.rasi */
+* {
+    bg:        {{colors.surface.default.hex}}E6;
+    bg-alt:    {{colors.surface_container_high.default.hex}};
+    bg-sel:    {{colors.primary_container.default.hex}};
+    fg:        {{colors.on_surface.default.hex}};
+    fg-sel:    {{colors.on_primary_container.default.hex}};
+    muted:     {{colors.outline.default.hex}};
+    accent:    {{colors.primary.default.hex}};
+    accent-fg: {{colors.on_primary.default.hex}};
+    third:     {{colors.tertiary.default.hex}};
+    urgent:    {{colors.error.default.hex}};
+}
